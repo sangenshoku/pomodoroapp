@@ -12,15 +12,15 @@ export type PomodoroModeValue = keyof PomodoroTimeSetting;
 
 export const LOCAL_STORAGE_KEY = 'pomodoroTimerSetting';
 
-export const DEFAULT_TIME_SETTING: PomodoroTimeSetting = {
+export const DEFAULT_TIME_SETTING: PomodoroTimeSetting = Object.freeze({
   pomodoro: 25,
   shortBreak: 5,
   longBreak: 15
-};
+});
 
 export const usePomodoroTimerSettingStore = defineStore('pomodoro-timer-setting', () => {
   const _timeSetting = reactive<PomodoroTimeSetting>(
-    getFromLocalStorage<PomodoroTimeSetting>(LOCAL_STORAGE_KEY) ?? DEFAULT_TIME_SETTING
+    getFromLocalStorage<PomodoroTimeSetting>(LOCAL_STORAGE_KEY) ?? { ...DEFAULT_TIME_SETTING }
   );
 
   const timeSetting = computed(() => _timeSetting);
