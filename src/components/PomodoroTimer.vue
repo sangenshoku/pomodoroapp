@@ -1,14 +1,29 @@
 <script setup lang="ts">
-import { useTimer } from '@/composables/timer';
+import { useTimer, TimerStatusEnum } from '@/composables/timer';
 import { onMounted, toRef, watch } from 'vue';
+
+// Error: [@vue/compiler-sfc] Failed to resolve index type into finite keys
+// see: https://github.com/vuejs/core/issues/8286
+// type PomodoroTimerEmits = { init: [minuteStr: string] } & {
+//   [K in TimerStatus]: [minuteStr: string];
+// };
 
 const props = defineProps<{
   minutes: number;
 }>();
 
 const minutesRef = toRef(props, 'minutes');
-const { timeFormatted, startTimer, resumeTimer, pauseTimer, stopTimer, status } =
-  useTimer(minutesRef);
+const {
+  timeFormatted,
+  startTimer,
+  resumeTimer,
+  pauseTimer,
+  stopTimer,
+  status,
+  isRunning,
+  isStopped,
+  isPaused
+} = useTimer(minutesRef);
 
 const emits = defineEmits<{
   init: [minuteStr: string];
@@ -20,11 +35,11 @@ const emits = defineEmits<{
 watch(
   [timeFormatted, status],
   ([newTime, newStatus]) => {
-    if (newStatus === 'running') {
+    if (newStatus === TimerStatusEnum.RUNNING) {
       emits('running', newTime);
-    } else if (newStatus === 'stopped') {
+    } else if (newStatus === TimerStatusEnum.STOPPED) {
       emits('stopped', newTime);
-    } else if (newStatus === 'paused') {
+    } else if (newStatus === TimerStatusEnum.PAUSED) {
       emits('paused', newTime);
     }
   },
@@ -32,16 +47,12 @@ watch(
 );
 
 const toggleTimer = () => {
-  switch (status.value) {
-    case 'stopped':
-      startTimer(props.minutes);
-      break;
-    case 'paused':
-      resumeTimer();
-      break;
-    case 'running':
-      pauseTimer();
-      break;
+  if (isStopped()) {
+    startTimer(props.minutes);
+  } else if (isPaused()) {
+    resumeTimer();
+  } else if (isRunning()) {
+    pauseTimer();
   }
 };
 
@@ -56,12 +67,12 @@ onMounted(() => {
     </span>
     <div class="pomodoro-control flex gap-4 justify-center">
       <button class="btn-toggle-start btn btn-lg btn-primary" @click="toggleTimer">
-        {{ status === 'running' ? 'Pause' : 'Start' }}
+        {{ isRunning() ? 'Pause' : 'Start' }}
       </button>
       <button
         class="btn-stop btn btn-error btn-lg btn-circle"
         @click="stopTimer"
-        v-if="status === 'running'"
+        v-if="isRunning()"
       >
         <span class="bi bi-stop-fill text-3xl text-white"></span>
       </button>

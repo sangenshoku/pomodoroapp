@@ -3,7 +3,14 @@ import { ref, computed, type Ref, toValue, watchEffect, watch } from 'vue';
 export const SECOND_IN_MILLISECONDS = 1000;
 export const SECOND = 60;
 
+export enum TimerStatusEnum {
+  RUNNING = 'running',
+  PAUSED = 'paused',
+  STOPPED = 'stopped'
+}
+
 export type MinuteRef = Ref<number>;
+export type TimerStatus = `${TimerStatusEnum}`;
 
 interface TimerTime {
   total: number;
@@ -54,10 +61,11 @@ export const useTimer = (minutesRef: MinuteRef) => {
     minutes: 0,
     seconds: 0
   });
-  const status = ref<'running' | 'paused' | 'stopped'>('stopped');
+  const _status = ref<TimerStatus>(TimerStatusEnum.STOPPED);
   const timerInterval = ref<number | null>(null);
 
   const time = computed(() => _time.value);
+  const status = computed(() => _status.value);
   const timeFormatted = computed(() => {
     return (
       `${_time.value.minutes}`.padStart(2, '0') + ':' + `${_time.value.seconds}`.padStart(2, '0')
@@ -76,7 +84,7 @@ export const useTimer = (minutesRef: MinuteRef) => {
     const duration = calculateMinutesDurationTimestamp(minutes);
 
     return new Promise<void>((resolve) => {
-      status.value = 'running';
+      setStatus(TimerStatusEnum.RUNNING);
       timerInterval.value = window.setInterval(() => {
         Object.assign(_time.value, calculateTime(duration));
 
@@ -86,14 +94,14 @@ export const useTimer = (minutesRef: MinuteRef) => {
         }
       }, SECOND_IN_MILLISECONDS);
     }).then(() => {
-      status.value = 'stopped';
+      setStatus(TimerStatusEnum.STOPPED);
       initializeTime(_time, minutesRef);
     });
   };
 
   const resumeTimer = async () => {
     return new Promise<void>((resolve, reject) => {
-      if (status.value !== 'paused') reject(`The timer is currently ${status.value}.`);
+      if (!isPaused()) reject(`The timer is currently ${status.value}.`);
       const minutesFromCurrentTotal = _time.value.total / SECOND;
       startTimer(minutesFromCurrentTotal);
       resolve();
@@ -105,7 +113,7 @@ export const useTimer = (minutesRef: MinuteRef) => {
       resetTimerInterval();
       resolve();
     }).then(() => {
-      status.value = 'paused';
+      setStatus(TimerStatusEnum.PAUSED);
     });
   };
 
@@ -114,9 +122,25 @@ export const useTimer = (minutesRef: MinuteRef) => {
       resetTimerInterval();
       resolve();
     }).then(() => {
-      status.value = 'stopped';
+      setStatus(TimerStatusEnum.STOPPED);
       initializeTime(_time, minutesRef);
     });
+  };
+
+  const setStatus = (status: TimerStatus) => {
+    _status.value = status;
+  };
+
+  const isRunning = () => {
+    return toValue(_status) === TimerStatusEnum.RUNNING;
+  };
+
+  const isPaused = () => {
+    return toValue(_status) === TimerStatusEnum.PAUSED;
+  };
+
+  const isStopped = () => {
+    return toValue(_status) === TimerStatusEnum.STOPPED;
   };
 
   const resetTimerInterval = () => {
@@ -135,6 +159,9 @@ export const useTimer = (minutesRef: MinuteRef) => {
     startTimer,
     pauseTimer,
     resumeTimer,
-    stopTimer
+    stopTimer,
+    isRunning,
+    isPaused,
+    isStopped
   };
 };
