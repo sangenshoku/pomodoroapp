@@ -3,6 +3,8 @@ import { ref, computed, type Ref, toValue, watchEffect, watch } from 'vue';
 export const SECOND_IN_MILLISECONDS = 1000;
 export const SECOND = 60;
 
+export type MinuteRef = Ref<number>;
+
 interface TimerTime {
   total: number;
   minutes: number;
@@ -32,16 +34,22 @@ export const calculateTime = (durationTimestamp: number): TimerTime => {
   };
 };
 
-const calculateMinuteRefDurationTimestamp = (minutesRef: Ref<number>) => {
+const isValidMinutes = (minutes: number) => {
+  return minutes >= 0 && minutes <= 60;
+};
+
+const calculateMinuteRefDurationTimestamp = (minutesRef: MinuteRef) => {
+  if (!isValidMinutes(minutesRef.value)) return;
   return calculateTime(calculateMinutesDurationTimestamp(toValue(minutesRef)));
 };
 
-const initializeTime = (time: Ref<TimerTime>, minutesRef: Ref<number>) => {
+const initializeTime = (time: Ref<TimerTime>, minutesRef: MinuteRef) => {
+  if (!isValidMinutes(minutesRef.value)) return;
   Object.assign(time.value, calculateMinuteRefDurationTimestamp(minutesRef));
 };
 
-export const useTimer = (minutesRef: Ref<number>) => {
-  const time = ref<TimerTime>({
+export const useTimer = (minutesRef: MinuteRef) => {
+  const _time = ref<TimerTime>({
     total: 0,
     minutes: 0,
     seconds: 0
@@ -49,9 +57,10 @@ export const useTimer = (minutesRef: Ref<number>) => {
   const status = ref<'running' | 'paused' | 'stopped'>('stopped');
   const timerInterval = ref<number | null>(null);
 
+  const time = computed(() => _time.value);
   const timeFormatted = computed(() => {
     return (
-      `${time.value.minutes}`.padStart(2, '0') + ':' + `${time.value.seconds}`.padStart(2, '0')
+      `${_time.value.minutes}`.padStart(2, '0') + ':' + `${_time.value.seconds}`.padStart(2, '0')
     );
   });
 
@@ -60,7 +69,7 @@ export const useTimer = (minutesRef: Ref<number>) => {
   });
 
   watchEffect(() => {
-    initializeTime(time, minutesRef);
+    initializeTime(_time, minutesRef);
   });
 
   const startTimer = async (minutes: number = toValue(minutesRef)) => {
@@ -69,23 +78,23 @@ export const useTimer = (minutesRef: Ref<number>) => {
     return new Promise<void>((resolve) => {
       status.value = 'running';
       timerInterval.value = window.setInterval(() => {
-        Object.assign(time.value, calculateTime(duration));
+        Object.assign(_time.value, calculateTime(duration));
 
-        if (time.value.total <= 0) {
+        if (_time.value.total <= 0) {
           clearInterval(timerInterval.value!);
           resolve();
         }
       }, SECOND_IN_MILLISECONDS);
     }).then(() => {
       status.value = 'stopped';
-      initializeTime(time, minutesRef);
+      initializeTime(_time, minutesRef);
     });
   };
 
   const resumeTimer = async () => {
     return new Promise<void>((resolve, reject) => {
       if (status.value !== 'paused') reject(`The timer is currently ${status.value}.`);
-      const minutesFromCurrentTotal = time.value.total / SECOND;
+      const minutesFromCurrentTotal = _time.value.total / SECOND;
       startTimer(minutesFromCurrentTotal);
       resolve();
     });
@@ -106,7 +115,7 @@ export const useTimer = (minutesRef: Ref<number>) => {
       resolve();
     }).then(() => {
       status.value = 'stopped';
-      initializeTime(time, minutesRef);
+      initializeTime(_time, minutesRef);
     });
   };
 

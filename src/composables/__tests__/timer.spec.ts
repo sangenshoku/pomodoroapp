@@ -9,7 +9,8 @@ describe('useTimer', () => {
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
   });
 
   it('should start the timer', async () => {
