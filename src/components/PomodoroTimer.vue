@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useTimer, TimerStatusEnum } from '@/composables/timer';
+import type { PomodoroModeValue } from '@/stores/timer-setting';
 import { onMounted, toRef, watch } from 'vue';
 
 // Error: [@vue/compiler-sfc] Failed to resolve index type into finite keys
@@ -8,11 +9,17 @@ import { onMounted, toRef, watch } from 'vue';
 //   [K in TimerStatus]: [minuteStr: string];
 // };
 
-const props = defineProps<{
+interface PomodoroTimerProps {
   minutes: number;
-}>();
+  mode?: PomodoroModeValue;
+}
+
+const props = withDefaults(defineProps<PomodoroTimerProps>(), {
+  mode: 'pomodoro'
+});
 
 const minutesRef = toRef(props, 'minutes');
+
 const {
   timeFormatted,
   startTimer,
@@ -22,7 +29,8 @@ const {
   status,
   isRunning,
   isStopped,
-  isPaused
+  isPaused,
+  isFinished
 } = useTimer(minutesRef);
 
 const emits = defineEmits<{
@@ -30,6 +38,8 @@ const emits = defineEmits<{
   running: [minuteStr: string];
   stopped: [minuteStr: string];
   paused: [minuteStr: string];
+  finished: [minuteStr: string];
+  modeChanged: [mode: string, minuteStr: string];
 }>();
 
 watch(
@@ -41,13 +51,22 @@ watch(
       emits('stopped', newTime);
     } else if (newStatus === TimerStatusEnum.PAUSED) {
       emits('paused', newTime);
+    } else if (newStatus === TimerStatusEnum.FINISHED) {
+      emits('finished', newTime);
     }
   },
   { deep: true }
 );
 
+watch(
+  () => props.mode,
+  (newMode) => {
+    emits('modeChanged', newMode, timeFormatted.value);
+  }
+);
+
 const toggleTimer = () => {
-  if (isStopped()) {
+  if (isStopped() || isFinished()) {
     startTimer(props.minutes);
   } else if (isPaused()) {
     resumeTimer();
@@ -61,7 +80,7 @@ onMounted(() => {
 });
 </script>
 <template>
-  <div class="pomodoro-timer inline-grid p-2" data-testid="pomodoro-timer">
+  <div class="pomodoro-timer inline-grid p-2" data-testid="pomodoro-timer" ref="pomodoro">
     <span class="time">
       {{ timeFormatted }}
     </span>

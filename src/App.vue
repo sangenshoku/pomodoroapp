@@ -2,20 +2,22 @@
 import { reactive, ref } from 'vue';
 import { RouterView, RouterLink } from 'vue-router';
 import { usePomodoroTimerSettingStore, DEFAULT_TIME_SETTING } from '@/stores/timer-setting';
+import Modal from '@/components/Modal.vue';
+import TextInput from './components/TextInput.vue';
 
 const pomodoroTimeSetting = usePomodoroTimerSettingStore();
 
-const settingDialog = ref<HTMLDialogElement>();
+const settingDialogVisible = ref(false);
 const settingForm = reactive({ ...pomodoroTimeSetting.timeSetting });
 
 const handleSettingClick = () => {
-  settingDialog.value?.showModal();
+  settingDialogVisible.value = true;
 };
 
 const handleSaveSetting = (event: Event) => {
   event.preventDefault();
   pomodoroTimeSetting.setTimeSetting(settingForm);
-  settingDialog.value?.close();
+  settingDialogVisible.value = false;
 };
 
 const handleClickReset = () => {
@@ -40,61 +42,56 @@ const handleClickReset = () => {
   <main class="container p-4">
     <RouterView />
   </main>
-  <dialog class="modal" ref="settingDialog">
-    <div class="modal-box max-w-md">
-      <div class="modal-header flex justify-between items-center mb-5">
-        <h3 class="font-bold text-lg">Setting</h3>
-
-        <form method="dialog">
-          <button class="btn btn-sm btn-circle">
-            <span class="bi bi-x-lg"></span>
-          </button>
-        </form>
-      </div>
-      <form id="form-setting" @submit="handleSaveSetting">
-        <div class="grid grid-cols-3 gap-3">
-          <div class="form-control">
-            <label for="pomodoro mb-3">
-              <span class="text-slate-500">Pomodoro</span>
-            </label>
-            <input
-              type="number"
-              class="input input-bordered input-sm"
-              id="pomodoro"
-              min="0"
-              v-model="settingForm.pomodoro"
-            />
-          </div>
-          <div class="form-control">
-            <label for="short-break mb-3">
-              <span class="text-slate-500">Short Break</span>
-            </label>
-            <input
-              type="number"
-              class="input input-bordered input-sm"
-              id="short-break"
-              min="0"
-              v-model="settingForm.shortBreak"
-            />
-          </div>
-          <div class="form-control">
-            <label for="long-break mb-3">
-              <span class="text-slate-500">Long Break</span>
-            </label>
-            <input
-              type="number"
-              class="input input-bordered input-sm"
-              id="long-break"
-              min="0"
-              v-model="settingForm.longBreak"
-            />
-          </div>
+  <Modal v-model:visible="settingDialogVisible" header="Setting">
+    <form id="form-setting" @submit="handleSaveSetting">
+      <div class="grid grid-cols-3 gap-3">
+        <div class="form-control">
+          <label for="pomodoro mb-3">
+            <span class="text-slate-500">Pomodoro</span>
+          </label>
+          <TextInput
+            type="number"
+            size="small"
+            id="pomodoro"
+            min="0"
+            step=".01"
+            bordered
+            v-model="settingForm.pomodoro"
+          />
         </div>
-      </form>
-      <div class="modal-action">
-        <button type="submit" class="btn" @click="handleClickReset">Reset</button>
-        <button type="submit" class="btn btn-primary" form="form-setting">Save</button>
+        <div class="form-control">
+          <label for="short-break mb-3">
+            <span class="text-slate-500">Short Break</span>
+          </label>
+          <TextInput
+            type="number"
+            size="small"
+            id="short-break"
+            min="0"
+            step=".01"
+            bordered
+            v-model="settingForm.shortBreak"
+          />
+        </div>
+        <div class="form-control">
+          <label for="long-break mb-3">
+            <span class="text-slate-500">Long Break</span>
+          </label>
+          <TextInput
+            type="number"
+            size="small"
+            id="long-break"
+            min="0"
+            step=".01"
+            bordered
+            v-model="settingForm.longBreak"
+          />
+        </div>
       </div>
-    </div>
-  </dialog>
+    </form>
+    <template #modalAction>
+      <button type="submit" class="btn" @click="handleClickReset">Reset</button>
+      <button type="submit" class="btn btn-primary" form="form-setting">Save</button>
+    </template>
+  </Modal>
 </template>

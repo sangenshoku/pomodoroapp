@@ -6,7 +6,8 @@ export const SECOND = 60;
 export enum TimerStatusEnum {
   RUNNING = 'running',
   PAUSED = 'paused',
-  STOPPED = 'stopped'
+  STOPPED = 'stopped',
+  FINISHED = 'finished'
 }
 
 export type MinuteRef = Ref<number>;
@@ -94,7 +95,7 @@ export const useTimer = (minutesRef: MinuteRef) => {
         }
       }, SECOND_IN_MILLISECONDS);
     }).then(() => {
-      setStatus(TimerStatusEnum.STOPPED);
+      setStatus(TimerStatusEnum.FINISHED);
       initializeTime(_time, minutesRef);
     });
   };
@@ -143,6 +144,10 @@ export const useTimer = (minutesRef: MinuteRef) => {
     return toValue(_status) === TimerStatusEnum.STOPPED;
   };
 
+  const isFinished = () => {
+    return toValue(_status) === TimerStatusEnum.FINISHED;
+  };
+
   const resetTimerInterval = () => {
     const interval = timerInterval.value;
 
@@ -162,6 +167,7 @@ export const useTimer = (minutesRef: MinuteRef) => {
     stopTimer,
     isRunning,
     isPaused,
-    isStopped
+    isStopped,
+    isFinished
   };
 };

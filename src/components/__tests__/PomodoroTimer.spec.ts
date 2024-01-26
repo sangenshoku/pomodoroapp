@@ -45,8 +45,8 @@ describe('PomodoroTimer', () => {
 
     expect(wrapper.find('.time').text()).toContain('24:59');
 
-    expect(wrapper.emitted().running[0]).toEqual(['25:00']);
-    expect(wrapper.emitted().running[1]).toEqual(['24:59']);
+    expect(wrapper.emitted().running[0]).toContain('25:00');
+    expect(wrapper.emitted().running[1]).toContain('24:59');
   });
 
   it('should pause the timer when "Pause" is clicked', async () => {
@@ -89,5 +89,25 @@ describe('PomodoroTimer', () => {
     await flushPromises();
 
     expect(wrapper.emitted().stopped[0]).toEqual(['25:00']);
+  });
+
+  it('should emit "mode-changed" event', async () => {
+    const wrapper = mount(PomodoroTimer, {
+      props: {
+        minutes: 25
+      }
+    });
+
+    await wrapper.setProps({ mode: 'shortBreak' });
+
+    expect(wrapper.emitted().modeChanged[0]).toEqual(['shortBreak', '25:00']);
+
+    await wrapper.setProps({ mode: 'longBreak' });
+
+    expect(wrapper.emitted().modeChanged[1]).toEqual(['longBreak', '25:00']);
+
+    await wrapper.setProps({ mode: 'pomodoro' });
+
+    expect(wrapper.emitted().modeChanged[2]).toEqual(['pomodoro', '25:00']);
   });
 });

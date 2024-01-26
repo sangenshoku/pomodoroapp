@@ -35,6 +35,8 @@ export const usePomodoroTimerSettingStore = defineStore('pomodoro-timer-setting'
       if (typeof value !== 'number') continue;
       if (value < 0) {
         settings[key as PomodoroModeValue] = 0;
+      } else if (value > 60) {
+        settings[key as PomodoroModeValue] = 60;
       }
     }
     Object.assign(_timeSetting, settings);

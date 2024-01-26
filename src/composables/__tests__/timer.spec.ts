@@ -46,7 +46,7 @@ describe('useTimer', () => {
 
     await flushPromises();
 
-    expect(status.value).toEqual('stopped');
+    expect(status.value).toEqual('finished');
   });
 
   it('should pause the timer', async () => {
