@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import PomodoroTimer from '@/components/PomodoroTimer.vue';
 import { reactive, ref, toValue } from 'vue';
 import { usePomodoroTimerSettingStore, type PomodoroModeValue } from '@/stores/timer-setting';
 import { setHTMLTitle } from '@/utils';
 import { useTasksStore, type Task, type TaskAdd } from '@/stores/tasks';
-import Modal from '@/components/Modal.vue';
-import TextInput from '@/components/TextInput.vue';
-import TaskList from '@/components/tasks/TaskList.vue';
+import { Modal, TaskList, TextInput, PomodoroTimer } from '@/components';
 
 interface PomodoroMode {
   name: string;
@@ -19,6 +16,7 @@ const DEFAULT_TASK: Task = Object.freeze({
   estimatedPomodoros: 1,
   completedPomodoros: 0
 });
+const LONG_BREAK_INTERVAL = 4;
 
 const pomodoroTimeSetting = usePomodoroTimerSettingStore();
 const tasksStore = useTasksStore();
@@ -70,25 +68,22 @@ const handleTimerEvent = (minuteStr: string) => {
 const handleFinishedPomodoro = () => {
   switch (toValue(currentMode)) {
     case 'pomodoro': {
-      console.log('finished pomodoro');
-
-      if (toValue(currentPomodoroCount) % 2 === 0) {
+      if (toValue(currentPomodoroCount) % LONG_BREAK_INTERVAL === 0) {
         setMode('longBreak');
       } else {
         setMode('shortBreak');
       }
 
-      currentPomodoroCount.value += 1;
+      currentPomodoroCount.value++;
 
       const task = toValue(selectedTask);
       if (!task) return;
 
-      task.completedPomodoros += 1;
+      task.completedPomodoros++;
       tasksStore.updateTask(task);
       break;
     }
     default: {
-      console.log('finished break');
       setMode('pomodoro');
     }
   }
