@@ -1,3 +1,5 @@
+import type { PomodoroModeValue } from '@/stores/timer-setting';
+
 export const getFromLocalStorage = <T>(key: string) => {
   const item = localStorage.getItem(key);
   if (!item) return null;
@@ -6,4 +8,8 @@ export const getFromLocalStorage = <T>(key: string) => {
 
 export const setHTMLTitle = (title: string) => {
   document.title = title;
+};
+
+export const setDataMode = (mode: PomodoroModeValue) => {
+  document.body.setAttribute('data-mode', mode);
 };

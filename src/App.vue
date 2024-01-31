@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { RouterView, RouterLink } from 'vue-router';
 import { usePomodoroTimerSettingStore, DEFAULT_TIME_SETTING } from '@/stores/timer-setting';
 import Modal from '@/components/Modal.vue';
 import TextInput from './components/TextInput.vue';
+import { setDataMode } from '@/utils';
 
 const pomodoroTimeSetting = usePomodoroTimerSettingStore();
 
@@ -23,6 +24,10 @@ const handleSaveSetting = (event: Event) => {
 const handleClickReset = () => {
   Object.assign(settingForm, DEFAULT_TIME_SETTING);
 };
+
+onMounted(() => {
+  setDataMode('pomodoro');
+});
 </script>
 
 <template>
@@ -33,7 +38,7 @@ const handleClickReset = () => {
       <span>doro</span>
     </RouterLink>
     <div class="">
-      <button class="btn btn-sm" @click="handleSettingClick">
+      <button class="btn-setting btn btn-sm" @click="handleSettingClick">
         <span class="bi bi-gear-fill"></span>
         Setting
       </button>
@@ -46,7 +51,7 @@ const handleClickReset = () => {
     <form id="form-setting" @submit="handleSaveSetting">
       <div class="grid grid-cols-3 gap-3">
         <div class="form-control">
-          <label for="pomodoro mb-3">
+          <label for="pomodoro" class="label">
             <span class="text-slate-500">Pomodoro</span>
           </label>
           <TextInput
@@ -60,7 +65,7 @@ const handleClickReset = () => {
           />
         </div>
         <div class="form-control">
-          <label for="short-break mb-3">
+          <label for="short-break" class="label">
             <span class="text-slate-500">Short Break</span>
           </label>
           <TextInput
@@ -74,7 +79,7 @@ const handleClickReset = () => {
           />
         </div>
         <div class="form-control">
-          <label for="long-break mb-3">
+          <label for="long-break" class="label">
             <span class="text-slate-500">Long Break</span>
           </label>
           <TextInput
@@ -95,3 +100,10 @@ const handleClickReset = () => {
     </template>
   </Modal>
 </template>
+<style scoped>
+.btn-setting {
+  background-color: var(--color-black-alpha-2);
+  color: var(--pomo-text-color);
+  border: none;
+}
+</style>

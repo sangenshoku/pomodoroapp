@@ -19,7 +19,7 @@ const handleCheck = (event: Event) => {
 </script>
 <template>
   <div
-    class="task-item card w-full bg-base-100 shadow"
+    class="task-item card w-full bg-base-100"
     :data-active="props.active"
     data-testid="task-item"
   >
@@ -42,10 +42,21 @@ const handleCheck = (event: Event) => {
   </div>
 </template>
 <style scoped>
+.task-item {
+  border-left: 6px solid transparent;
+  color: grey;
+}
+
 .task-item:hover {
   cursor: pointer;
+  border-left: 6px solid rgb(204, 204, 204);
 }
+
+.task-item .checkbox {
+  --chkbg: grey !important;
+}
+
 [data-active='true'] {
-  border: solid 1px gray;
+  border-left: 6px solid grey;
 }
 </style>

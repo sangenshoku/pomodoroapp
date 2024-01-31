@@ -2,6 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-pomodoro: #e88080ff;
+  --color-short-break: #5acea7ff;
+  --color-long-break: #66afd3ff;
+  --color-active-pomodoro: var(--color-pomodoro);
+  --color-black-alpha: rgba(255, 255, 255, 0.1);
+  --color-black-alpha-2: rgba(255, 255, 255, 0.2);
+  --pomo-brand-color: #fff;
+  --pomo-timer-text-color: #fff;
+  --pomo-heading-text-color: #fff;
+  --pomo-text-color: #fff;
+}
+
+body {
+  min-height: 100vh;
+  transition: background-color 0.5s ease;
+}
+
 #app {
   @apply container mx-auto;
+}
+
+[data-mode='pomodoro'] {
+  --color-active-pomodoro: var(--color-pomodoro);
+  background-color: var(--color-pomodoro);
+}
+
+[data-mode='shortBreak'] {
+  --color-active-pomodoro: var(--color-short-break);
+  background-color: var(--color-short-break);
+}
+
+[data-mode='longBreak'] {
+  --color-active-pomodoro: var(--color-long-break);
+  background-color: var(--color-long-break);
+}
+
+[data-mode='pomodoro'] .pomodoro-container,
+[data-mode='shortBreak'] .pomodoro-container,
+[data-mode='longBreak'] .pomodoro-container {
+  background-color: var(--color-black-alpha);
+}
+
+.brand {
+  color: var(--pomo-brand-color);
 }

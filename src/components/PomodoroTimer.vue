@@ -85,14 +85,10 @@ onMounted(() => {
       {{ timeFormatted }}
     </span>
     <div class="pomodoro-control flex gap-4 justify-center">
-      <button class="btn-toggle-start btn btn-lg btn-primary" @click="toggleTimer">
+      <button class="btn-toggle-start btn btn-lg w-1/2" @click="toggleTimer">
         {{ isRunning() ? 'Pause' : 'Start' }}
       </button>
-      <button
-        class="btn-stop btn btn-error btn-lg btn-circle"
-        @click="stopTimer"
-        v-if="isRunning()"
-      >
+      <button class="btn-stop btn btn-lg btn-circle glass" @click="stopTimer" v-if="isRunning()">
         <span class="bi bi-stop-fill text-3xl text-white"></span>
       </button>
     </div>
@@ -100,7 +96,21 @@ onMounted(() => {
 </template>
 <style scoped>
 .time {
+  color: var(--pomo-timer-text-color);
   font-size: 8rem;
   font-weight: bold;
+}
+.pomodoro-control {
+  position: relative;
+  width: 100%;
+}
+
+.btn-stop {
+  position: absolute;
+  right: 0;
+}
+.btn-toggle-start {
+  background-color: #fff;
+  color: var(--color-active-pomodoro);
 }
 </style>
