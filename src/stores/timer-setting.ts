@@ -1,4 +1,4 @@
-import { computed, reactive, watch } from 'vue';
+import { shallowReactive, shallowRef, watch, shallowReadonly } from 'vue';
 import { defineStore } from 'pinia';
 import { getFromLocalStorage } from '@/utils';
 
@@ -19,11 +19,14 @@ export const DEFAULT_TIME_SETTING: PomodoroTimeSetting = Object.freeze({
 });
 
 export const usePomodoroTimerSettingStore = defineStore('pomodoro-timer-setting', () => {
-  const _timeSetting = reactive<PomodoroTimeSetting>(
+  const _timeSetting = shallowReactive<PomodoroTimeSetting>(
     getFromLocalStorage<PomodoroTimeSetting>(LOCAL_STORAGE_KEY) ?? { ...DEFAULT_TIME_SETTING }
   );
 
-  const timeSetting = computed(() => _timeSetting);
+  const _currentMode = shallowRef<PomodoroModeValue>('pomodoro');
+
+  const currentMode = shallowReadonly(_currentMode);
+  const timeSetting = shallowReadonly(_timeSetting);
 
   watch(_timeSetting, (newTimeSetting) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newTimeSetting));
@@ -42,6 +45,14 @@ export const usePomodoroTimerSettingStore = defineStore('pomodoro-timer-setting'
     Object.assign(_timeSetting, settings);
   };
 
+  const setMode = (mode: PomodoroModeValue) => {
+    _currentMode.value = mode;
+  };
+
+  const isMode = (mode: PomodoroModeValue) => {
+    return _currentMode.value === mode;
+  };
+
   const getTimeSetting = (mode: PomodoroModeValue) => {
     return _timeSetting[mode];
   };
@@ -54,6 +65,9 @@ export const usePomodoroTimerSettingStore = defineStore('pomodoro-timer-setting'
     timeSetting,
     setTimeSetting,
     reset,
-    getTimeSetting
+    getTimeSetting,
+    setMode,
+    currentMode,
+    isMode
   };
 });

@@ -5,11 +5,18 @@ import { usePomodoroTimerSettingStore, DEFAULT_TIME_SETTING } from '@/stores/tim
 import Modal from '@/components/Modal.vue';
 import TextInput from './components/TextInput.vue';
 import { setDataMode } from '@/utils';
+import Button from '@/components/Button.vue';
+import { useAuthStore } from './stores/auth';
+import { useRouter } from 'vue-router';
 
 const pomodoroTimeSetting = usePomodoroTimerSettingStore();
+const authStore = useAuthStore();
+const router = useRouter();
 
 const settingDialogVisible = ref(false);
 const settingForm = reactive({ ...pomodoroTimeSetting.timeSetting });
+
+const authRoutes = ['register', 'login'];
 
 const handleSettingClick = () => {
   settingDialogVisible.value = true;
@@ -25,26 +32,66 @@ const handleClickReset = () => {
   Object.assign(settingForm, DEFAULT_TIME_SETTING);
 };
 
+const handleClickLogin = () => {
+  router.push({ name: 'login' });
+};
+
 onMounted(() => {
   setDataMode('pomodoro');
 });
 </script>
 
 <template>
-  <header class="flex justify-between items-center p-4">
+  <header
+    class="flex justify-center items-center p-4"
+    v-if="authRoutes.includes(String($route.name))"
+  >
+    <RouterLink :to="{ name: 'home' }" class="brand text-4xl font-bold">
+      <span>pom</span>
+      <img src="@/assets/images/tomato-svgrepo-com.svg" class="w-6 inline" />
+      <span>doro</span>
+    </RouterLink>
+  </header>
+  <header class="flex justify-between items-center p-4" v-else-if="$route.name !== 'not-found'">
     <RouterLink :to="{ name: 'home' }" class="brand text-2xl font-bold">
       <span>pom</span>
       <img src="@/assets/images/tomato-svgrepo-com.svg" class="w-5 inline" />
       <span>doro</span>
     </RouterLink>
-    <div class="">
-      <button class="btn-setting btn btn-sm" @click="handleSettingClick">
+    <div class="flex gap-2">
+      <Button class="btn-setting" size="small" default @click="handleSettingClick">
         <span class="bi bi-gear-fill"></span>
         Setting
-      </button>
+      </Button>
+      <Button
+        class="btn-setting"
+        size="small"
+        default
+        v-if="!authStore.isAuthenticated"
+        @click="handleClickLogin"
+      >
+        <span class="bi bi-person-fill"></span>
+        Login
+      </Button>
+      <div class="dropdown dropdown-end" v-else>
+        <Button size="small" shape="circle" tabindex="0" default>
+          <span class="bi bi-person-circle"></span>
+        </Button>
+        <ul
+          tabindex="0"
+          class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32 mt-2"
+        >
+          <li>
+            <a @click="authStore.logout">
+              <span class="bi bi-box-arrow-right"></span>
+              Logout
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
   </header>
-  <main class="container p-4">
+  <main class="container p-4 h-full">
     <RouterView />
   </main>
   <Modal v-model:visible="settingDialogVisible" header="Setting">
@@ -95,15 +142,8 @@ onMounted(() => {
       </div>
     </form>
     <template #modalAction>
-      <button type="submit" class="btn" @click="handleClickReset">Reset</button>
-      <button type="submit" class="btn btn-primary" form="form-setting">Save</button>
+      <Button type="button" @click="handleClickReset">Reset</Button>
+      <Button type="submit" color="primary" form="form-setting">Save</Button>
     </template>
   </Modal>
 </template>
-<style scoped>
-.btn-setting {
-  background-color: var(--color-black-alpha-2);
-  color: var(--pomo-text-color);
-  border: none;
-}
-</style>

@@ -5,6 +5,7 @@ import { setHTMLTitle } from '@/utils';
 import { useTasksStore, type Task, type TaskAdd } from '@/stores/tasks';
 import { Modal, TaskList, TextInput, PomodoroTimer } from '@/components';
 import { setDataMode } from '@/utils';
+import Button from '@/components/Button.vue';
 
 interface PomodoroMode {
   name: string;
@@ -22,7 +23,6 @@ const LONG_BREAK_INTERVAL = 4;
 const pomodoroTimeSetting = usePomodoroTimerSettingStore();
 const tasksStore = useTasksStore();
 
-const currentMode = ref<PomodoroModeValue>('pomodoro');
 const currentPomodoroCount = ref(1);
 const addTaskModalVisible = ref(false);
 const selectedTask = ref<Task>();
@@ -45,9 +45,9 @@ const modes: PomodoroMode[] = [
 
 const updateHTMLTitle = (minuteStr: string) => {
   let message = `Let's focus!`;
-  if (currentMode.value === 'shortBreak') {
+  if (pomodoroTimeSetting.isMode('shortBreak')) {
     message = `Take a short break!`;
-  } else if (currentMode.value === 'longBreak') {
+  } else if (pomodoroTimeSetting.isMode('longBreak')) {
     message = `Take a long break!`;
   }
 
@@ -55,7 +55,7 @@ const updateHTMLTitle = (minuteStr: string) => {
 };
 
 const setMode = (mode: PomodoroModeValue) => {
-  currentMode.value = mode;
+  pomodoroTimeSetting.setMode(mode);
   setDataMode(mode);
 };
 
@@ -68,7 +68,7 @@ const handleTimerEvent = (minuteStr: string) => {
 };
 
 const handleFinishedPomodoro = () => {
-  switch (toValue(currentMode)) {
+  switch (pomodoroTimeSetting.currentMode) {
     case 'pomodoro': {
       if (toValue(currentPomodoroCount) % LONG_BREAK_INTERVAL === 0) {
         setMode('longBreak');
@@ -118,57 +118,63 @@ const handleClickDeleteAllTasks = () => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center lg:w-[31.25rem] lg:mx-auto">
+  <div class="flex flex-col items-center main-wrapper mx-auto">
     <div class="pomodoro-container rounded-lg shadow">
       <div class="flex gap-4">
-        <button
-          class="btn btn-sm glass text-white"
+        <Button
+          class="text-white"
+          size="small"
+          glass
           v-for="mode in modes"
           :key="mode.name"
           @click="setMode(mode.value)"
         >
           {{ mode.name }}
-        </button>
+        </Button>
       </div>
       <PomodoroTimer
         :minutes="pomodoroTimeSetting.getTimeSetting('pomodoro')"
-        :mode="currentMode"
+        :mode="pomodoroTimeSetting.currentMode"
         @init="handleInitPomodoro"
         @running="handleTimerEvent"
         @paused="handleTimerEvent"
         @finished="handleFinishedPomodoro"
         @mode-changed="handleModeChanged"
-        v-if="currentMode === 'pomodoro'"
+        v-if="pomodoroTimeSetting.isMode('pomodoro')"
       />
       <PomodoroTimer
         :minutes="pomodoroTimeSetting.getTimeSetting('shortBreak')"
-        :mode="currentMode"
+        :mode="pomodoroTimeSetting.currentMode"
         @init="handleInitPomodoro"
         @running="handleTimerEvent"
         @paused="handleTimerEvent"
         @finished="handleFinishedPomodoro"
         @mode-changed="handleModeChanged"
-        v-if="currentMode === 'shortBreak'"
+        v-if="pomodoroTimeSetting.isMode('shortBreak')"
       />
       <PomodoroTimer
         :minutes="pomodoroTimeSetting.getTimeSetting('longBreak')"
-        :mode="currentMode"
+        :mode="pomodoroTimeSetting.currentMode"
         @init="handleInitPomodoro"
         @running="handleTimerEvent"
         @paused="handleTimerEvent"
         @finished="handleFinishedPomodoro"
         @mode-changed="handleModeChanged"
-        v-if="currentMode === 'longBreak'"
+        v-if="pomodoroTimeSetting.isMode('longBreak')"
       />
     </div>
     <div class="current-pomodoros">
-      <span class="text-md" v-if="currentMode === 'pomodoro' || tasksStore.hasTasks">{{
+      <span class="text-md" v-if="pomodoroTimeSetting.isMode('pomodoro') || tasksStore.hasTasks">{{
         `# ${currentPomodoroCount}`
       }}</span>
-      <span class="text-md" v-else-if="currentMode === 'shortBreak' && !tasksStore.hasTasks"
+      <span
+        class="text-md"
+        v-else-if="pomodoroTimeSetting.isMode('shortBreak') && !tasksStore.hasTasks"
         >Take a short break!</span
       >
-      <span class="text-md" v-else-if="currentMode === 'longBreak' && !tasksStore.hasTasks"
+      <span
+        class="text-md"
+        v-else-if="pomodoroTimeSetting.isMode('longBreak') && !tasksStore.hasTasks"
         >Take a long break!</span
       >
     </div>
@@ -178,24 +184,23 @@ const handleClickDeleteAllTasks = () => {
     <div class="tasks-container grid gap-5 p-2 w-full">
       <div class="flex justify-between items-center border-b-2 p-2">
         <span class="text-lg font-bold tasks-label">Tasks</span>
-        <button
+        <Button
           type="button"
-          class="btn btn-remove-tasks btn-circle btn-sm"
+          size="small"
+          class="btn-remove-tasks"
           :disabled="!tasksStore.hasTasks"
+          shape="circle"
           @click="handleClickDeleteAllTasks"
         >
           <span class="bi bi-trash"></span>
-        </button>
+        </Button>
       </div>
       <div class="tasks-container">
         <TaskList v-model:selected="selectedTask" :tasks="tasksStore.tasks" />
       </div>
-      <button
-        class="btn-add-task btn btn-outline btn-neutral btn-lg w-full"
-        @click="handleClickAddTask"
-      >
+      <Button class="btn-add-task w-full" size="large" outlined @click="handleClickAddTask">
         Add task
-      </button>
+      </Button>
     </div>
   </div>
   <Modal v-model:visible="addTaskModalVisible" header="Add Task">
@@ -216,7 +221,7 @@ const handleClickDeleteAllTasks = () => {
       </div>
     </form>
     <template #modalAction>
-      <button type="submit" class="btn btn-primary" form="form-add-task">Add</button>
+      <Button type="submit" color="primary" form="form-add-task">Add</Button>
     </template>
   </Modal>
 </template>
@@ -249,5 +254,11 @@ const handleClickDeleteAllTasks = () => {
   background-color: var(--color-black-alpha-2);
   color: var(--pomo-text-color);
   border: none;
+}
+
+@media only screen and (min-width: 460px) and (max-width: 640px) {
+  .pomodoro-container {
+    width: 26rem;
+  }
 }
 </style>

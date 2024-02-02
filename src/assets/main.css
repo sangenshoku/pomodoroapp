@@ -22,6 +22,11 @@ body {
 
 #app {
   @apply container mx-auto;
+  min-height: inherit;
+}
+
+main {
+  min-height: inherit;
 }
 
 [data-mode='pomodoro'] {
@@ -47,4 +52,8 @@ body {
 
 .brand {
   color: var(--pomo-brand-color);
+}
+
+.main-wrapper {
+  @apply w-auto sm:w-[27rem] sm:w-[28rem] md:w-[30rem] lg:w-[31.25rem];
 }

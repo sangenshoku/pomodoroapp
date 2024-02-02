@@ -9,47 +9,67 @@ describe('usePomodoroTimerSettingStore', () => {
     setActivePinia(createPinia());
   });
 
-  it('should be able to set time setting', () => {
-    const { setTimeSetting, timeSetting } = usePomodoroTimerSettingStore();
+  describe('time setting', () => {
+    it('should be able to set time setting', () => {
+      const { setTimeSetting, timeSetting } = usePomodoroTimerSettingStore();
 
-    setTimeSetting({ pomodoro: 30 });
+      setTimeSetting({ pomodoro: 30 });
 
-    expect(timeSetting).toMatchObject({ pomodoro: 30, shortBreak: 5, longBreak: 15 });
+      expect(timeSetting).toMatchObject({ pomodoro: 30, shortBreak: 5, longBreak: 15 });
 
-    setTimeSetting({ shortBreak: 10 });
+      setTimeSetting({ shortBreak: 10 });
 
-    expect(timeSetting).toMatchObject({ pomodoro: 30, shortBreak: 10, longBreak: 15 });
+      expect(timeSetting).toMatchObject({ pomodoro: 30, shortBreak: 10, longBreak: 15 });
 
-    setTimeSetting({ longBreak: 20 });
+      setTimeSetting({ longBreak: 20 });
 
-    expect(timeSetting).toMatchObject({ pomodoro: 30, shortBreak: 10, longBreak: 20 });
+      expect(timeSetting).toMatchObject({ pomodoro: 30, shortBreak: 10, longBreak: 20 });
+    });
+
+    it('should not be able to set time setting with negative value', () => {
+      const { setTimeSetting, timeSetting } = usePomodoroTimerSettingStore();
+
+      setTimeSetting({ pomodoro: -1 });
+
+      expect(timeSetting).toMatchObject({ pomodoro: 0, shortBreak: 5, longBreak: 15 });
+
+      setTimeSetting({ shortBreak: -1 });
+
+      expect(timeSetting).toMatchObject({ pomodoro: 0, shortBreak: 0, longBreak: 15 });
+
+      setTimeSetting({ longBreak: -1 });
+
+      expect(timeSetting).toMatchObject({ pomodoro: 0, shortBreak: 0, longBreak: 0 });
+    });
+
+    it('should be able to reset time setting', () => {
+      const { setTimeSetting, reset, timeSetting } = usePomodoroTimerSettingStore();
+
+      setTimeSetting({ pomodoro: 30, shortBreak: 10, longBreak: 20 });
+
+      expect(timeSetting).toMatchObject({ pomodoro: 30, shortBreak: 10, longBreak: 20 });
+
+      reset();
+
+      expect(timeSetting).toMatchObject({ pomodoro: 25, shortBreak: 5, longBreak: 15 });
+    });
   });
 
-  it('should not be able to set time setting with negative value', () => {
-    const { setTimeSetting, timeSetting } = usePomodoroTimerSettingStore();
+  describe('mode', () => {
+    it('should be able to set mode', () => {
+      const store = usePomodoroTimerSettingStore();
 
-    setTimeSetting({ pomodoro: -1 });
+      store.setMode('shortBreak');
 
-    expect(timeSetting).toMatchObject({ pomodoro: 0, shortBreak: 5, longBreak: 15 });
+      expect(store.currentMode).toEqual('shortBreak');
 
-    setTimeSetting({ shortBreak: -1 });
+      store.setMode('longBreak');
 
-    expect(timeSetting).toMatchObject({ pomodoro: 0, shortBreak: 0, longBreak: 15 });
+      expect(store.currentMode).toEqual('longBreak');
 
-    setTimeSetting({ longBreak: -1 });
+      store.setMode('pomodoro');
 
-    expect(timeSetting).toMatchObject({ pomodoro: 0, shortBreak: 0, longBreak: 0 });
-  });
-
-  it('should be able to reset time setting', () => {
-    const { setTimeSetting, reset, timeSetting } = usePomodoroTimerSettingStore();
-
-    setTimeSetting({ pomodoro: 30, shortBreak: 10, longBreak: 20 });
-
-    expect(timeSetting).toMatchObject({ pomodoro: 30, shortBreak: 10, longBreak: 20 });
-
-    reset();
-
-    expect(timeSetting).toMatchObject({ pomodoro: 25, shortBreak: 5, longBreak: 15 });
+      expect(store.currentMode).toEqual('pomodoro');
+    });
   });
 });

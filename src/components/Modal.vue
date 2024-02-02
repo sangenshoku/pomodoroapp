@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUpdated, ref, toValue } from 'vue';
+import Button from './Button.vue';
 
 const visible = defineModel('visible', { default: false, required: true, type: Boolean });
 const props = defineProps<{ header?: string }>();
@@ -32,9 +33,9 @@ onMounted(() => {
       <div class="modal-header flex justify-between items-center mb-5">
         <h3 class="font-bold text-lg">{{ props.header }}</h3>
         <form method="dialog">
-          <button class="btn btn-sm btn-circle">
+          <Button size="small" shape="circle">
             <span class="bi bi-x-lg"></span>
-          </button>
+          </Button>
         </form>
       </div>
       <slot></slot>

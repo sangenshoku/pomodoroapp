@@ -22,7 +22,7 @@ describe('useTimer', () => {
 
     vi.advanceTimersByTime(1000);
 
-    expect(time.value).toMatchObject({
+    expect(time).toMatchObject({
       total: 59,
       minutes: 0,
       seconds: 59
@@ -30,7 +30,7 @@ describe('useTimer', () => {
 
     vi.advanceTimersByTime(29000);
 
-    expect(time.value).toMatchObject({
+    expect(time).toMatchObject({
       total: 30,
       minutes: 0,
       seconds: 30
@@ -38,7 +38,7 @@ describe('useTimer', () => {
 
     vi.advanceTimersByTime(30000);
 
-    expect(time.value).toMatchObject({
+    expect(time).toMatchObject({
       total: 0,
       minutes: 0,
       seconds: 0
@@ -58,7 +58,7 @@ describe('useTimer', () => {
 
     vi.advanceTimersByTime(1000);
 
-    expect(time.value).toMatchObject({
+    expect(time).toMatchObject({
       total: 59,
       minutes: 0,
       seconds: 59
@@ -70,7 +70,7 @@ describe('useTimer', () => {
 
     vi.advanceTimersByTime(1000);
 
-    expect(time.value).toMatchObject({
+    expect(time).toMatchObject({
       total: 59,
       minutes: 0,
       seconds: 59
@@ -86,7 +86,7 @@ describe('useTimer', () => {
 
     vi.advanceTimersByTime(1000);
 
-    expect(time.value).toMatchObject({
+    expect(time).toMatchObject({
       total: 119,
       minutes: 1,
       seconds: 59
@@ -98,7 +98,7 @@ describe('useTimer', () => {
 
     vi.advanceTimersByTime(1000);
 
-    expect(time.value).toMatchObject({
+    expect(time).toMatchObject({
       total: 119,
       minutes: 1,
       seconds: 59
@@ -110,7 +110,7 @@ describe('useTimer', () => {
 
     vi.advanceTimersByTime(1000);
 
-    expect(time.value).toMatchObject({
+    expect(time).toMatchObject({
       total: 118,
       minutes: 1,
       seconds: 58
@@ -126,7 +126,7 @@ describe('useTimer', () => {
 
     vi.advanceTimersByTime(1000);
 
-    expect(time.value).toMatchObject({
+    expect(time).toMatchObject({
       total: 59,
       minutes: 0,
       seconds: 59
@@ -136,7 +136,7 @@ describe('useTimer', () => {
 
     expect(status.value).toEqual('stopped');
 
-    expect(time.value).toMatchObject({
+    expect(time).toMatchObject({
       total: 60,
       minutes: 1,
       seconds: 0

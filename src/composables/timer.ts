@@ -1,4 +1,14 @@
-import { ref, computed, type Ref, toValue, watchEffect, watch } from 'vue';
+import {
+  computed,
+  type Ref,
+  toValue,
+  watchEffect,
+  watch,
+  shallowReactive,
+  shallowReadonly,
+  shallowRef,
+  type ShallowReactive
+} from 'vue';
 
 export const SECOND_IN_MILLISECONDS = 1000;
 export const SECOND = 60;
@@ -51,26 +61,24 @@ const calculateMinuteRefDurationTimestamp = (minutesRef: MinuteRef) => {
   return calculateTime(calculateMinutesDurationTimestamp(toValue(minutesRef)));
 };
 
-const initializeTime = (time: Ref<TimerTime>, minutesRef: MinuteRef) => {
+const initializeTime = (time: ShallowReactive<TimerTime>, minutesRef: MinuteRef) => {
   if (!isValidMinutes(minutesRef.value)) return;
-  Object.assign(time.value, calculateMinuteRefDurationTimestamp(minutesRef));
+  Object.assign(time, calculateMinuteRefDurationTimestamp(minutesRef));
 };
 
 export const useTimer = (minutesRef: MinuteRef) => {
-  const _time = ref<TimerTime>({
+  const _time = shallowReactive<TimerTime>({
     total: 0,
     minutes: 0,
     seconds: 0
   });
-  const _status = ref<TimerStatus>(TimerStatusEnum.STOPPED);
-  const timerInterval = ref<number | null>(null);
+  const _status = shallowRef<TimerStatus>(TimerStatusEnum.STOPPED);
+  const timerInterval = shallowRef<number | null>(null);
 
-  const time = computed(() => _time.value);
-  const status = computed(() => _status.value);
+  const time = shallowReadonly(_time);
+  const status = shallowReadonly(_status);
   const timeFormatted = computed(() => {
-    return (
-      `${_time.value.minutes}`.padStart(2, '0') + ':' + `${_time.value.seconds}`.padStart(2, '0')
-    );
+    return `${_time.minutes}`.padStart(2, '0') + ':' + `${_time.seconds}`.padStart(2, '0');
   });
 
   watch(minutesRef, () => {
@@ -87,9 +95,9 @@ export const useTimer = (minutesRef: MinuteRef) => {
     return new Promise<void>((resolve) => {
       setStatus(TimerStatusEnum.RUNNING);
       timerInterval.value = window.setInterval(() => {
-        Object.assign(_time.value, calculateTime(duration));
+        Object.assign(_time, calculateTime(duration));
 
-        if (_time.value.total <= 0) {
+        if (_time.total <= 0) {
           clearInterval(timerInterval.value!);
           resolve();
         }
@@ -103,7 +111,7 @@ export const useTimer = (minutesRef: MinuteRef) => {
   const resumeTimer = async () => {
     return new Promise<void>((resolve, reject) => {
       if (!isPaused()) reject(`The timer is currently ${status.value}.`);
-      const minutesFromCurrentTotal = _time.value.total / SECOND;
+      const minutesFromCurrentTotal = _time.total / SECOND;
       startTimer(minutesFromCurrentTotal);
       resolve();
     });

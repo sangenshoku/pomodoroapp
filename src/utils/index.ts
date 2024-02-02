@@ -6,6 +6,10 @@ export const getFromLocalStorage = <T>(key: string) => {
   return JSON.parse(item) as T;
 };
 
+export const saveToLocalStorage = (key: string, value: any) => {
+  localStorage.setItem(key, JSON.stringify(value));
+};
+
 export const setHTMLTitle = (title: string) => {
   document.title = title;
 };
