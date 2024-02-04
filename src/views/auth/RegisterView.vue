@@ -5,6 +5,7 @@ import Button from '@/components/Button.vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 import { axiosErrorHandler } from '@/http';
+import { useToastNotificationStore } from '@/stores/toast-notification';
 
 export interface RegisterResponseError {
   description: string;
@@ -16,6 +17,7 @@ export interface RegisterResponseError {
 
 const authStore = useAuthStore();
 const router = useRouter();
+const notificationStore = useToastNotificationStore();
 
 const formRegister = shallowReactive({
   email: '',
@@ -37,6 +39,7 @@ const handleSubmit = async (event: Event) => {
   authStore
     .register(toValue(formRegister))
     .then(() => {
+      notificationStore.addSuccessNotification('Registered Successfully.');
       router.push({ name: 'login' });
     })
     .catch(

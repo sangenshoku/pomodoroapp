@@ -8,6 +8,7 @@ import { setDataMode } from '@/utils';
 import Button from '@/components/Button.vue';
 import { useAuthStore } from './stores/auth';
 import { useRouter } from 'vue-router';
+import Toaster from './components/Toaster.vue';
 
 const pomodoroTimeSetting = usePomodoroTimerSettingStore();
 const authStore = useAuthStore();
@@ -146,4 +147,5 @@ onMounted(() => {
       <Button type="submit" color="primary" form="form-setting">Save</Button>
     </template>
   </Modal>
+  <Toaster />
 </template>
