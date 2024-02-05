@@ -37,6 +37,11 @@ const handleClickLogin = () => {
   router.push({ name: 'login' });
 };
 
+const handleClickLogout = () => {
+  if (authStore.isLoading('logout')) return;
+  authStore.logout();
+};
+
 onMounted(() => {
   setDataMode('pomodoro');
 });
@@ -83,7 +88,7 @@ onMounted(() => {
           class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32 mt-2"
         >
           <li>
-            <a @click="authStore.logout">
+            <a @click="handleClickLogout">
               <span class="bi bi-box-arrow-right"></span>
               Logout
             </a>

@@ -104,6 +104,7 @@ const resetError = () => {
         size="large"
         color="primary"
         form="form-register"
+        :loading="authStore.isLoading('register')"
       >
         Register
       </Button>

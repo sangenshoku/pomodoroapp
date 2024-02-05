@@ -8,6 +8,7 @@ export interface ButtonProps {
   wide?: boolean;
   glass?: boolean;
   default?: boolean;
+  loading?: boolean;
 }
 
 const props = withDefaults(defineProps<ButtonProps>(), {
@@ -39,7 +40,9 @@ const props = withDefaults(defineProps<ButtonProps>(), {
       }
     ]"
     data-testid="button"
+    :disabled="loading"
   >
+    <span class="loading loading-spinner" v-if="loading"></span>
     <slot></slot>
   </button>
 </template>

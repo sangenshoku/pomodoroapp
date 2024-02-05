@@ -95,7 +95,14 @@ const resetError = () => {
           <span>{{ error?.description }}</span>
         </div>
       </form>
-      <Button type="submit" class="btn-login w-full" size="large" color="primary" form="form-login">
+      <Button
+        type="submit"
+        class="btn-login w-full"
+        size="large"
+        color="primary"
+        form="form-login"
+        :loading="authStore.isLoading('login')"
+      >
         Login
       </Button>
     </div>
