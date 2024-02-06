@@ -15,8 +15,13 @@ interface HttpError<T> extends HttpErrorBase<T> {
   error: Error;
 }
 
+const BASE_URL =
+  import.meta.env.VITE_API_SERVER_URL ||
+  import.meta.env.VITE_VERCEL_SERVER_URL ||
+  'http://localhost:5174';
+
 const axios = _axios.create({
-  baseURL: 'http://localhost:5174/api',
+  baseURL: `${BASE_URL}/api`,
   withCredentials: true
 });
 

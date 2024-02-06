@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed, toValue, shallowReactive } from 'vue';
-import CookieAuthService, { AuthService } from '@/services/auth-service';
+import CookieAuthService, { type AuthService } from '@/services/auth-service';
 import { getFromLocalStorage, saveToLocalStorage } from '@/utils';
 
 export interface User {

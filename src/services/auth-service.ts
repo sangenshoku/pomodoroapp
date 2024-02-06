@@ -7,27 +7,14 @@ interface CurrentAuthUser {
 
 const AUTH_ENDPOINT = '/auth';
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-export class AuthService {
-  login(email: string, password: string): Promise<AxiosResponse<CurrentAuthUser>> {
-    throw new Error('Method not implemented.');
-  }
-
-  logout(): Promise<AxiosResponse> {
-    throw new Error('Method not implemented.');
-  }
-
-  register(email: string, password: string): Promise<AxiosResponse> {
-    throw new Error('Method not implemented.');
-  }
-
-  currentUser(): Promise<AxiosResponse<CurrentAuthUser>> {
-    throw new Error('Method not implemented.');
-  }
+export interface AuthService {
+  login(email: string, password: string): Promise<AxiosResponse<CurrentAuthUser>>;
+  logout(): Promise<AxiosResponse>;
+  register(email: string, password: string): Promise<AxiosResponse>;
+  currentUser(): Promise<AxiosResponse<CurrentAuthUser>>;
 }
-/* eslint-enable @typescript-eslint/no-unused-vars */
 
-export default class CookieAuthService extends AuthService {
+export default class CookieAuthService implements AuthService {
   async login(email: string, password: string) {
     return await axios.post<CurrentAuthUser>(`${AUTH_ENDPOINT}/login`, {
       email,
