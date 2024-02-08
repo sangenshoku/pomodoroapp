@@ -1,32 +1,67 @@
 <script setup lang="ts">
-import { reactive, ref, toValue } from 'vue';
+import { reactive, ref, toValue, watch, type DeepReadonly, computed } from 'vue';
 import { usePomodoroTimerSettingStore, type PomodoroModeValue } from '@/stores/timer-setting';
 import { setHTMLTitle } from '@/utils';
-import { useTasksStore, type Task, type TaskAdd } from '@/stores/tasks';
+import { type TaskData, Task } from '@/models/task';
+import { useTasksStore, type TaskOrReadonlyTask } from '@/stores/tasks';
 import { Modal, TaskList, TextInput, PomodoroTimer } from '@/components';
 import { setDataMode } from '@/utils';
 import Button from '@/components/Button.vue';
+import { TaskService } from '@/services/task-service';
+import { useAuthStore } from '@/stores/auth';
 
 interface PomodoroMode {
   name: string;
   value: PomodoroModeValue;
 }
 
-const DEFAULT_TASK: Task = Object.freeze({
+type DefaultTask = Pick<TaskData, 'id' | 'title' | 'estimatedPomodoros'>;
+
+const DEFAULT_ADD_TASK: DefaultTask = Object.freeze({
   id: '',
   title: '',
-  estimatedPomodoros: 1,
-  completedPomodoros: 0
+  estimatedPomodoros: 1
 });
+
+const DEFAULT_UPDATE_TASK = Object.freeze({
+  ...DEFAULT_ADD_TASK,
+  completedPomodoros: 0,
+  done: false
+});
+
 const LONG_BREAK_INTERVAL = 4;
 
 const pomodoroTimeSetting = usePomodoroTimerSettingStore();
 const tasksStore = useTasksStore();
+const authStore = useAuthStore();
+
+const taskService = new TaskService();
 
 const currentPomodoroCount = ref(1);
 const addTaskModalVisible = ref(false);
-const selectedTask = ref<Task>();
-const formAddTask = reactive<TaskAdd>({ ...DEFAULT_TASK });
+const updateTaskModalVisible = ref(false);
+const selectedTask = ref<Task | DeepReadonly<Task>>();
+const formAddTask = reactive({ ...DEFAULT_ADD_TASK });
+const formUpdateTask = reactive({ ...DEFAULT_UPDATE_TASK });
+
+const hasTasks = computed(() =>
+  authStore.isAuthenticated ? taskService.hasTasks() : tasksStore.hasTasks
+);
+
+watch(
+  () => authStore.isAuthenticated,
+  (isAuthenticated) => {
+    resetSelectedTask();
+    tasksStore.deleteAllTasks();
+
+    if (!isAuthenticated) return;
+
+    taskService.getTasks().then((tasks) => {
+      setEmptySelectedTask(tasks[0]);
+    });
+  },
+  { immediate: true }
+);
 
 const modes: PomodoroMode[] = [
   {
@@ -81,8 +116,13 @@ const handleFinishedPomodoro = () => {
       const task = toValue(selectedTask);
       if (!task) return;
 
-      task.completedPomodoros++;
-      tasksStore.updateTask(task);
+      const cloned = task.clone().incrementCompletedPomodoros();
+
+      if (authStore.isAuthenticated) {
+        taskService.updateTask(cloned.toUpdateRequest());
+      } else {
+        tasksStore.updateTask(cloned);
+      }
       break;
     }
     default: {
@@ -97,24 +137,125 @@ const handleModeChanged = (mode: string, minuteStr: string) => {
 };
 
 const handleClickAddTask = () => {
+  openModalAddTask();
+};
+
+const handleClickUpdateTask = (task: TaskOrReadonlyTask) => {
+  const { id, title, estimatedPomodoros, completedPomodoros, done } = task;
+
+  openModalUpdateTask();
+
+  Object.assign(formUpdateTask, {
+    id,
+    title,
+    estimatedPomodoros,
+    completedPomodoros,
+    done
+  });
+};
+
+const handleClickDeleteTask = async () => {
+  const { id } = formUpdateTask;
+  if (authStore.isAuthenticated) {
+    await taskService.deleteTask(id);
+  } else {
+    tasksStore.deleteTask(id);
+  }
+
+  closeModalUpdateTask();
+};
+
+const handleSubmitAddTask = async (event: Event) => {
+  event.preventDefault();
+
+  if (!authStore.isAuthenticated) {
+    tasksStore.addTask(formAddTask);
+    setEmptySelectedTask(tasksStore.tasks[0]);
+  } else {
+    await taskService.addTask({
+      title: formAddTask.title,
+      estimatedPomodoros: formAddTask.estimatedPomodoros
+    });
+    setEmptySelectedTask(taskService.tasks[0]);
+  }
+
+  closeModalAddTask();
+  resetFormAddTask();
+};
+
+const handleSubmitUpdateTask = async (event: Event) => {
+  event.preventDefault();
+
+  if (authStore.isAuthenticated) {
+    await taskService.updateTask(formUpdateTask);
+  } else {
+    tasksStore.updateTask(formUpdateTask);
+  }
+
+  closeModalUpdateTask();
+  resetFormUpdateTask();
+};
+
+const handleToggleDone = async (task: TaskOrReadonlyTask, isDone: boolean) => {
+  const cloned = task.clone();
+
+  isDone ? cloned.markAsDone() : cloned.markAsUndone();
+
+  if (authStore.isAuthenticated) {
+    await taskService.updateTask(cloned.toUpdateRequest());
+  } else {
+    tasksStore.updateTask(cloned);
+  }
+};
+
+const handleClickDeleteAllTasks = async () => {
+  if (!confirm('Are you sure you want to delete all tasks?')) return;
+
+  if (authStore.isAuthenticated) {
+    await taskService.deleteAllTasks();
+  } else {
+    tasksStore.deleteAllTasks();
+  }
+
+  resetSelectedTask();
+};
+
+const openModalAddTask = () => {
   addTaskModalVisible.value = true;
 };
 
-const handleSubmitAddTask = (event: Event) => {
-  event.preventDefault();
+const openModalUpdateTask = () => {
+  updateTaskModalVisible.value = true;
+};
+
+const closeModalAddTask = () => {
   addTaskModalVisible.value = false;
-
-  tasksStore.addTask(formAddTask);
-
-  selectedTask.value ??= tasksStore.tasks[0];
-  Object.assign(formAddTask, DEFAULT_TASK);
 };
 
-const handleClickDeleteAllTasks = () => {
-  if (!confirm('Are you sure you want to delete all tasks?')) return;
-  tasksStore.deleteAllTasks();
+const closeModalUpdateTask = () => {
+  updateTaskModalVisible.value = false;
+};
+
+const setSelectedTask = (task: TaskOrReadonlyTask) => {
+  selectedTask.value = task;
+};
+
+const setEmptySelectedTask = (task: TaskOrReadonlyTask) => {
+  if (toValue(selectedTask)) return;
+  setSelectedTask(task);
+};
+
+const resetFormAddTask = () => {
+  Object.assign(formAddTask, DEFAULT_ADD_TASK);
+};
+
+const resetFormUpdateTask = () => {
+  Object.assign(formUpdateTask, DEFAULT_UPDATE_TASK);
+};
+
+function resetSelectedTask() {
   selectedTask.value = undefined;
-};
+}
 </script>
 
 <template>
@@ -164,17 +305,13 @@ const handleClickDeleteAllTasks = () => {
       />
     </div>
     <div class="current-pomodoros">
-      <span class="text-md" v-if="pomodoroTimeSetting.isMode('pomodoro') || tasksStore.hasTasks">{{
+      <span class="text-md" v-if="pomodoroTimeSetting.isMode('pomodoro') || hasTasks">{{
         `# ${currentPomodoroCount}`
       }}</span>
-      <span
-        class="text-md"
-        v-else-if="pomodoroTimeSetting.isMode('shortBreak') && !tasksStore.hasTasks"
+      <span class="text-md" v-else-if="pomodoroTimeSetting.isMode('shortBreak') && !hasTasks"
         >Take a short break!</span
       >
-      <span
-        class="text-md"
-        v-else-if="pomodoroTimeSetting.isMode('longBreak') && !tasksStore.hasTasks"
+      <span class="text-md" v-else-if="pomodoroTimeSetting.isMode('longBreak') && !hasTasks"
         >Take a long break!</span
       >
     </div>
@@ -188,7 +325,7 @@ const handleClickDeleteAllTasks = () => {
           type="button"
           size="small"
           class="btn-remove-tasks"
-          :disabled="!tasksStore.hasTasks"
+          :disabled="!hasTasks"
           shape="circle"
           @click="handleClickDeleteAllTasks"
         >
@@ -196,7 +333,12 @@ const handleClickDeleteAllTasks = () => {
         </Button>
       </div>
       <div class="tasks-container">
-        <TaskList v-model:selected="selectedTask" :tasks="tasksStore.tasks" />
+        <TaskList
+          v-model:selected="selectedTask"
+          :tasks="authStore.isAuthenticated ? taskService.tasks : tasksStore.tasks"
+          @click:edit="handleClickUpdateTask"
+          @toggle:done="handleToggleDone"
+        />
       </div>
       <Button class="btn-add-task w-full" size="large" outlined @click="handleClickAddTask">
         Add task
@@ -222,6 +364,30 @@ const handleClickDeleteAllTasks = () => {
     </form>
     <template #modalAction>
       <Button type="submit" color="primary" form="form-add-task">Add</Button>
+    </template>
+  </Modal>
+  <Modal v-model:visible="updateTaskModalVisible" header="Update Task">
+    <form id="form-update-task" class="grid gap-5" @submit="handleSubmitUpdateTask">
+      <div class="form-control">
+        <label for="task-name" class="label text-slate-500"> Task name </label>
+        <TextInput bordered required v-model="formUpdateTask.title" />
+      </div>
+      <div class="form-control">
+        <label for="estimated-pomodoros" class="label text-slate-500"> Estimated Pomodoros </label>
+        <TextInput
+          type="number"
+          bordered
+          min="1"
+          required
+          v-model="formUpdateTask.estimatedPomodoros"
+        />
+      </div>
+    </form>
+    <template #modalAction>
+      <div class="btn-controls flex justify-between w-full">
+        <Button type="button" @click="handleClickDeleteTask">Delete</Button>
+        <Button type="submit" color="primary" form="form-update-task">Update</Button>
+      </div>
     </template>
   </Modal>
 </template>

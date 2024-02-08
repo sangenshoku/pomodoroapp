@@ -1,20 +1,17 @@
 import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
+import { computed, readonly, ref, type DeepReadonly, type Ref } from 'vue';
+import { Task, type TaskData } from '@/models/task';
 
-export interface Task {
-  id: string;
-  title: string;
-  completedPomodoros: number;
-  estimatedPomodoros: number;
-  done?: boolean;
-}
-
-export type TaskAdd = Omit<Task, 'id' | 'completedPomodoros'>;
+export type TaskAdd = Pick<TaskData, 'title' | 'estimatedPomodoros'>;
+export type TaskUpdate = Pick<TaskData, 'id'> & Partial<Omit<TaskData, 'id'>>;
+export type TaskOrReadonlyTask = Task | DeepReadonly<Task>;
+export type TaskOrReadonlyTaskList = Task[] | DeepReadonly<Task[]>;
 
 export const useTasksStore = defineStore('tasks', () => {
-  const _tasks = ref<Task[]>([]);
+  // explicitly define using Ref type because it's being inferred as ordinary object of array
+  const _tasks: Ref<Task[]> = ref([]);
 
-  const tasks = computed(() => _tasks.value);
+  const tasks = readonly(_tasks);
   const hasTasks = computed(() => _tasks.value.length > 0);
 
   const addTask = (task: TaskAdd) => {
@@ -22,18 +19,21 @@ export const useTasksStore = defineStore('tasks', () => {
 
     if (!isValid(task)) return;
 
-    const newTask = { ...task, id: Date.now().toString(), completedPomodoros: 0 };
+    const newTask = new Task({
+      ...task,
+      id: Date.now().toString(),
+      completedPomodoros: 0,
+      done: false
+    });
+
     _tasks.value.push(newTask);
   };
 
-  const updateTask = (task: Task) => {
-    task = { ...task };
+  const updateTask = (task: TaskUpdate) => {
+    const foundTask = _tasks.value.find((t) => t.id === task.id);
+    if (!foundTask) return;
 
-    if (!isValid(task)) return;
-
-    const index = _tasks.value.findIndex((t) => t.id === task.id);
-    if (index === -1) return;
-    _tasks.value[index] = task;
+    foundTask.updateFrom(task);
   };
 
   const deleteTask = (id: string) => {
@@ -44,7 +44,7 @@ export const useTasksStore = defineStore('tasks', () => {
     _tasks.value.length = 0;
   };
 
-  const isValid = (task: Task | TaskAdd) => {
+  const isValid = (task: TaskAdd | TaskUpdate) => {
     for (const [key, value] of Object.entries(task)) {
       if (!value && value !== 0 && key !== 'id') return false;
     }

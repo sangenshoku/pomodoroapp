@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { Task } from '@/stores/tasks';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+import Button from '@/components/Button.vue';
+import type { TaskOrReadonlyTask } from '@/stores/tasks';
 
 interface TaskItemProps {
-  task: Task;
+  task: TaskOrReadonlyTask;
   active?: boolean;
 }
 
@@ -11,10 +12,24 @@ const props = withDefaults(defineProps<TaskItemProps>(), {
   active: false
 });
 
+const emits = defineEmits<{
+  'click:edit': [task: TaskOrReadonlyTask];
+  'toggle:done': [task: TaskOrReadonlyTask, isDone: boolean];
+}>();
+
 const checkboxModel = ref(props.task.done);
+
+watch(checkboxModel, (done) => {
+  emits('toggle:done', props.task, done);
+});
 
 const handleCheck = (event: Event) => {
   event.stopPropagation();
+};
+
+const handleClickEdit = (event: Event) => {
+  event.stopPropagation();
+  emits('click:edit', props.task);
 };
 </script>
 <template>
@@ -34,9 +49,14 @@ const handleCheck = (event: Event) => {
           />
           <span :class="{ 'line-through': checkboxModel }">{{ props.task.title }}</span>
         </div>
-        <span class="text-sm"
-          >{{ props.task.completedPomodoros }} / {{ props.task.estimatedPomodoros }}</span
-        >
+        <div class="more-details flex gap-3 items-center">
+          <span class="text-sm"
+            >{{ props.task.completedPomodoros }} / {{ props.task.estimatedPomodoros }}</span
+          >
+          <Button shape="square" size="extra-small" outlined @click="handleClickEdit">
+            <span class="bi bi-three-dots-vertical"></span>
+          </Button>
+        </div>
       </div>
     </div>
   </div>
@@ -58,5 +78,16 @@ const handleCheck = (event: Event) => {
 
 [data-active='true'] {
   border-left: 6px solid grey;
+}
+
+button {
+  color: grey;
+  border-color: grey;
+}
+
+button:hover {
+  color: #fff;
+  background-color: gray;
+  border-color: #fff;
 }
 </style>

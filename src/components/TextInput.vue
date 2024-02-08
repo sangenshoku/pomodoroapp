@@ -26,7 +26,6 @@ const inputRef = ref<HTMLInputElement | null>(null);
 onMounted(() => {
   if (props.focused) {
     inputRef.value?.focus();
-    console.log('focused');
   }
 });
 </script>

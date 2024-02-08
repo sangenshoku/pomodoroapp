@@ -2,6 +2,7 @@
 import { useTimer, TimerStatusEnum } from '@/composables/timer';
 import type { PomodoroModeValue } from '@/stores/timer-setting';
 import { onMounted, toRef, watch } from 'vue';
+import Button from '@/components/Button.vue';
 
 // Error: [@vue/compiler-sfc] Failed to resolve index type into finite keys
 // see: https://github.com/vuejs/core/issues/8286
@@ -85,12 +86,19 @@ onMounted(() => {
       {{ timeFormatted }}
     </span>
     <div class="pomodoro-control flex gap-4 justify-center">
-      <button class="btn-toggle-start btn btn-lg w-1/2" @click="toggleTimer">
+      <Button class="btn-toggle-start w-1/2" size="large" @click="toggleTimer">
         {{ isRunning() ? 'Pause' : 'Start' }}
-      </button>
-      <button class="btn-stop btn btn-lg btn-circle glass" @click="stopTimer" v-if="isRunning()">
+      </Button>
+      <Button
+        class="btn-stop"
+        size="large"
+        shape="circle"
+        glass
+        @click="stopTimer"
+        v-if="isRunning()"
+      >
         <span class="bi bi-stop-fill text-3xl text-white"></span>
-      </button>
+      </Button>
     </div>
   </div>
 </template>

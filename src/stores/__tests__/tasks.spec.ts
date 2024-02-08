@@ -27,6 +27,46 @@ describe('useTasksStore', () => {
     });
   });
 
+  describe('update task', () => {
+    it('should not update a readonly task directly', () => {
+      const store = useTasksStore();
+
+      store.addTask({ title: 'Task 1', estimatedPomodoros: 1 });
+
+      const task = store.tasks[0];
+
+      expect(task.done).toEqual(false);
+
+      task.markAsDone();
+
+      expect(task.done).toEqual(false);
+
+      store.updateTask(task);
+
+      expect(store.tasks[0].done).toEqual(false);
+    });
+
+    it('should update a readonly task by cloning', () => {
+      const store = useTasksStore();
+
+      store.addTask({ title: 'Task 1', estimatedPomodoros: 1 });
+
+      const cloned = store.tasks[0].clone();
+
+      cloned.title = 'Task Updated';
+      cloned.incrementCompletedPomodoros();
+      cloned.markAsDone();
+
+      expect(cloned.done).toEqual(true);
+
+      store.updateTask(cloned);
+
+      expect(store.tasks[0].title).toEqual('Task Updated');
+      expect(store.tasks[0].done).toEqual(true);
+      expect(store.tasks[0].completedPomodoros).toEqual(1);
+    });
+  });
+
   describe('delete task', () => {
     it('should delete all tasks', () => {
       const store = useTasksStore();

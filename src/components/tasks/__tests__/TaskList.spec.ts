@@ -1,30 +1,34 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import TaskList from '../TaskList.vue';
+import { Task } from '@/models/task';
 
 describe('TaskList', () => {
   it('should render properly', () => {
     const wrapper = mount(TaskList, {
       props: {
         tasks: [
-          {
+          new Task({
             id: '000',
             title: 'Test 1',
             completedPomodoros: 9,
-            estimatedPomodoros: 1
-          },
-          {
+            estimatedPomodoros: 1,
+            done: false
+          }),
+          new Task({
             id: '001',
             title: 'Test 2',
             completedPomodoros: 9,
-            estimatedPomodoros: 1
-          },
-          {
+            estimatedPomodoros: 1,
+            done: false
+          }),
+          new Task({
             id: '002',
             title: 'Test 3',
             completedPomodoros: 9,
-            estimatedPomodoros: 1
-          }
+            estimatedPomodoros: 1,
+            done: false
+          })
         ]
       }
     });
@@ -36,24 +40,27 @@ describe('TaskList', () => {
     const wrapper = mount(TaskList, {
       props: {
         tasks: [
-          {
+          new Task({
             id: '000',
             title: 'Test 1',
             completedPomodoros: 9,
-            estimatedPomodoros: 1
-          },
-          {
+            estimatedPomodoros: 1,
+            done: false
+          }),
+          new Task({
             id: '001',
             title: 'Test 2',
             completedPomodoros: 9,
-            estimatedPomodoros: 1
-          },
-          {
+            estimatedPomodoros: 1,
+            done: false
+          }),
+          new Task({
             id: '002',
             title: 'Test 3',
             completedPomodoros: 9,
-            estimatedPomodoros: 1
-          }
+            estimatedPomodoros: 1,
+            done: false
+          })
         ]
       }
     });
