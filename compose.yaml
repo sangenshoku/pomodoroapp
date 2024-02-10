@@ -1,0 +1,9 @@
+services:
+  server:
+    container_name: pomodoro_frontend
+    build:
+      context: .
+    environment:
+      NODE_ENV: production
+    ports:
+      - 5173:3000
