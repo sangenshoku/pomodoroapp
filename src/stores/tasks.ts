@@ -44,6 +44,10 @@ export const useTasksStore = defineStore('tasks', () => {
     _tasks.value.length = 0;
   };
 
+  const deleteFinishedTasks = () => {
+    _tasks.value = _tasks.value.filter((task) => !task.done);
+  };
+
   const isValid = (task: TaskAdd | TaskUpdate) => {
     for (const [key, value] of Object.entries(task)) {
       if (!value && value !== 0 && key !== 'id') return false;
@@ -57,6 +61,7 @@ export const useTasksStore = defineStore('tasks', () => {
     deleteTask,
     updateTask,
     deleteAllTasks,
-    hasTasks
+    hasTasks,
+    deleteFinishedTasks
   };
 });

@@ -52,32 +52,35 @@ onMounted(() => {
     class="flex justify-center items-center p-4"
     v-if="authRoutes.includes(String($route.name))"
   >
-    <RouterLink :to="{ name: 'home' }" class="brand text-4xl font-bold">
+    <RouterLink :to="{ name: 'home' }" class="brand-auth text-4xl font-bold">
       <span>pom</span>
       <img src="@/assets/images/tomato-svgrepo-com.svg" class="w-6 inline" />
       <span>doro</span>
     </RouterLink>
   </header>
   <header class="flex justify-between items-center p-4" v-else-if="$route.name !== 'not-found'">
-    <RouterLink :to="{ name: 'home' }" class="brand text-2xl font-bold">
+    <RouterLink :to="{ name: 'home' }" class="brand flex items-center text-2xl font-bold">
       <span>pom</span>
       <img src="@/assets/images/tomato-svgrepo-com.svg" class="w-5 inline" />
       <span>doro</span>
     </RouterLink>
+    <RouterLink :to="{ name: 'home' }" class="brand-small flex items-center text-2xl font-bold">
+      <img src="@/assets/images/tomato-svgrepo-com.svg" class="w-5 inline" />
+    </RouterLink>
     <div class="flex gap-2">
       <Button class="btn-setting" size="small" default @click="handleSettingClick">
         <span class="bi bi-gear-fill"></span>
-        Setting
+        <span class="text"> Setting </span>
       </Button>
       <Button
-        class="btn-setting"
+        class="btn-login"
         size="small"
         default
         v-if="!authStore.isAuthenticated"
         @click="handleClickLogin"
       >
         <span class="bi bi-person-fill"></span>
-        Login
+        <span class="text"> Login </span>
       </Button>
       <div class="dropdown dropdown-end" v-else>
         <Button size="small" shape="circle" tabindex="0" default>
@@ -90,7 +93,7 @@ onMounted(() => {
           <li>
             <a @click="handleClickLogout">
               <span class="bi bi-box-arrow-right"></span>
-              Logout
+              <span>Logout</span>
             </a>
           </li>
         </ul>

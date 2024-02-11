@@ -4,6 +4,8 @@ import type { TaskData, CreateTaskRequest, UpdateTaskRequest } from '@/models/ta
 import { QueryClient, useMutation, useQuery } from '@tanstack/vue-query';
 import { inject, toValue } from 'vue';
 
+type DeleteQuery = { id?: string; params?: { done: boolean } } | null;
+
 const getTasks = async () => {
   return await axios.get<TaskData[]>('/tasks');
 };
@@ -17,8 +19,10 @@ const updateTask = (task: UpdateTaskRequest) => {
   return axios.put<TaskData>(`/tasks/${id}`, rest);
 };
 
-const deleteTasks = (id: string | null = null) => {
-  return axios.delete(`/tasks${id ? `/${id}` : ''}`);
+const deleteTasks = (query: DeleteQuery = null) => {
+  return axios.delete(`/tasks${query && query.id ? `/${query.id}` : ''}`, {
+    params: query?.params
+  });
 };
 
 // const refetchTasksQuery = async (
@@ -33,7 +37,7 @@ export class TaskService {
   protected taskMutationCreate: ReturnType<typeof useMutation<unknown, unknown, CreateTaskRequest>>;
   protected taskMutationUpdate: ReturnType<typeof useMutation<unknown, unknown, UpdateTaskRequest>>;
   protected taskMutationDelete: ReturnType<
-    typeof useMutation<unknown, unknown, string | null | undefined>
+    typeof useMutation<unknown, unknown, DeleteQuery | undefined>
   >;
 
   protected tasksQuery: ReturnType<typeof useQuery<Task[]>>;
@@ -89,11 +93,15 @@ export class TaskService {
   }
 
   async deleteTask(id: string) {
-    return this.taskMutationDelete.mutateAsync(id);
+    return this.taskMutationDelete.mutateAsync({ id });
   }
 
   async deleteAllTasks() {
     return this.taskMutationDelete.mutateAsync(null);
+  }
+
+  async deleteFinishedTasks() {
+    return this.taskMutationDelete.mutateAsync({ params: { done: true } });
   }
 
   async getTasks() {

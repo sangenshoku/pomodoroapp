@@ -117,8 +117,31 @@ onMounted(() => {
   position: absolute;
   right: 0;
 }
+
 .btn-toggle-start {
   background-color: #fff;
   color: var(--color-active-pomodoro);
+}
+
+@media only screen and (max-width: 640px) {
+  .time {
+    font-size: 6rem;
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  .btn-stop {
+    right: -0.5rem;
+  }
+}
+
+@media only screen and (max-width: 320px) {
+  .time {
+    font-size: 5rem;
+  }
+
+  .btn-stop {
+    right: -1.25rem;
+  }
 }
 </style>

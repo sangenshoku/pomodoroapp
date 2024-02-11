@@ -78,5 +78,32 @@ describe('useTasksStore', () => {
 
       expect(store.tasks).toHaveLength(0);
     });
+
+    it('should delete a task', () => {
+      const store = useTasksStore();
+
+      store.addTask({ title: 'Task 1', estimatedPomodoros: 0 });
+      store.addTask({ title: 'Task 2', estimatedPomodoros: 0 });
+
+      store.deleteTask(store.tasks[0].id);
+
+      expect(store.tasks).toHaveLength(1);
+      expect(store.tasks[0].title).toEqual('Task 2');
+    });
+
+    it('should delete all finished tasks', () => {
+      const store = useTasksStore();
+
+      store.addTask({ title: 'Task 1', estimatedPomodoros: 0 });
+      store.addTask({ title: 'Task 2', estimatedPomodoros: 0 });
+
+      const cloned = store.tasks[0].clone().markAsDone();
+
+      store.updateTask(cloned);
+      store.deleteFinishedTasks();
+
+      expect(store.tasks).toHaveLength(1);
+      expect(store.tasks[0].title).toEqual('Task 2');
+    });
   });
 });

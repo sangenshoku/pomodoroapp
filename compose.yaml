@@ -1,9 +1,16 @@
 services:
-  server:
+  frontend:
     container_name: pomodoro_frontend
     build:
       context: .
     environment:
       NODE_ENV: production
-    ports:
-      - 5173:3000
+    expose:
+      - 3000
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    name: pomodoro-network
+    external: true

@@ -1,50 +1,50 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Locator } from '@playwright/test';
 
-test.describe.skip('Home', () => {
-  test('visits the app root url', async ({ page }) => {
+let startButton: Locator;
+let time: Locator;
+
+test.describe('Home', () => {
+  test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('[data-testid="pomodoro-timer"] .time')).toHaveText('25:00');
-    await expect(page.locator('[data-testid="pomodoro-timer"] .btn-toggle-start')).toBeVisible();
+    startButton = page.locator('[data-testid="pomodoro-timer"] .btn-toggle-start');
+    time = page.locator('[data-testid="pomodoro-timer"] .time');
+  });
+
+  test('visits the app root url', async () => {
+    await expect(time).toHaveText('25:00');
+    await expect(startButton).toBeVisible();
   });
 
   test('starts the timer', async ({ page }) => {
-    await page.goto('/');
-    await page.locator('[data-testid="pomodoro-timer"] .btn-toggle-start').click();
-    await expect(page.locator('[data-testid="pomodoro-timer"] .time')).toHaveText('24:59');
-    await expect(page.locator('[data-testid="pomodoro-timer"] .btn-toggle-start')).toHaveText(
-      'Pause'
-    );
+    await startButton.click();
+    await expect(time).toHaveText('24:59');
+    await expect(startButton).toHaveText('Pause');
+
+    await expect(page.locator('[data-testid="pomodoro-timer"] .btn-stop')).toBeVisible();
   });
 
-  test('pauses the timer', async ({ page }) => {
-    await page.goto('/');
-    await page.locator('[data-testid="pomodoro-timer"] .btn-toggle-start').click();
-    await expect(page.locator('[data-testid="pomodoro-timer"] .time')).toHaveText('25:00');
-    await expect(page.locator('[data-testid="pomodoro-timer"] .btn-toggle-start')).toHaveText(
-      'Pause'
-    );
-    await expect(page.locator('[data-testid="pomodoro-timer"] .time')).toHaveText('24:59');
+  test('pauses the timer', async () => {
+    await startButton.click();
+    await expect(time).toHaveText('25:00');
+    await expect(startButton).toHaveText('Pause');
+    await expect(time).toHaveText('24:59');
 
-    await page.locator('[data-testid="pomodoro-timer"] .btn-toggle-start').click();
+    // paused
+    await startButton.click();
+    await expect(time).toHaveText('24:59');
+    await expect(startButton).toHaveText('Start');
 
-    await expect(page.locator('[data-testid="pomodoro-timer"] .time')).toHaveText('24:59');
-
-    await expect(page.locator('[data-testid="pomodoro-timer"] .btn-toggle-start')).toHaveText(
-      'Start'
-    );
-
-    await page.locator('[data-testid="pomodoro-timer"] .btn-toggle-start').click();
-
-    await expect(page.locator('[data-testid="pomodoro-timer"] .time')).toHaveText('24:58');
+    // start again
+    await startButton.click();
+    await expect(time).toHaveText('24:58');
   });
 
   test('stops the timer', async ({ page }) => {
-    await page.goto('/');
-    await page.locator('[data-testid="pomodoro-timer"] .btn-toggle-start').click();
-    await expect(page.locator('[data-testid="pomodoro-timer"] .time')).toHaveText('24:59');
+    await startButton.click();
+    await expect(time).toHaveText('24:59');
 
     await page.locator('[data-testid="pomodoro-timer"] .btn-stop').click();
 
-    await expect(page.locator('[data-testid="pomodoro-timer"] .time')).toHaveText('25:00');
+    await expect(time).toHaveText('25:00');
   });
 });

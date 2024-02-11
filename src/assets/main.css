@@ -50,10 +50,33 @@ main {
   background-color: var(--color-black-alpha);
 }
 
-.brand {
+.brand,
+.brand-auth {
   color: var(--pomo-brand-color);
 }
 
 .main-wrapper {
   @apply w-auto sm:w-[27rem] sm:w-[28rem] md:w-[30rem] lg:w-[31.25rem];
+}
+
+@media only screen and (width <= 400px) {
+  .btn-setting .text,
+  .btn-login .text,
+  .brand {
+    display: none;
+  }
+
+  .mode-controls {
+    display: none;
+  }
+}
+
+@media only screen and (width > 400px) {
+  .brand-small {
+    display: none;
+  }
+
+  .mode-controls-short {
+    display: none;
+  }
 }

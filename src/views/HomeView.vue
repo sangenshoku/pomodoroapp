@@ -12,6 +12,7 @@ import { useAuthStore } from '@/stores/auth';
 
 interface PomodoroMode {
   name: string;
+  shortName: string;
   value: PomodoroModeValue;
 }
 
@@ -66,15 +67,35 @@ watch(
 const modes: PomodoroMode[] = [
   {
     name: 'Pomodoro',
+    shortName: 'Pomo',
     value: 'pomodoro'
   },
   {
     name: 'Short break',
+    shortName: 'Short',
     value: 'shortBreak'
   },
   {
     name: 'Long break',
+    shortName: 'Long',
     value: 'longBreak'
+  }
+];
+
+const tasksActionsDropdownMenu = [
+  {
+    label: 'Remove Finished Tasks',
+    icon: 'bi bi-trash',
+    action: () => {
+      handleClickDeleteFinishedTasks();
+    }
+  },
+  {
+    label: 'Remove All Tasks',
+    icon: 'bi bi-trash',
+    action: () => {
+      handleClickDeleteAllTasks();
+    }
   }
 ];
 
@@ -220,6 +241,18 @@ const handleClickDeleteAllTasks = async () => {
   resetSelectedTask();
 };
 
+const handleClickDeleteFinishedTasks = async () => {
+  if (!confirm('Are you sure you want to delete finished tasks?')) return;
+
+  if (authStore.isAuthenticated) {
+    await taskService.deleteFinishedTasks();
+  } else {
+    tasksStore.deleteFinishedTasks();
+  }
+
+  resetSelectedTask();
+};
+
 const openModalAddTask = () => {
   addTaskModalVisible.value = true;
 };
@@ -261,7 +294,7 @@ function resetSelectedTask() {
 <template>
   <div class="flex flex-col items-center main-wrapper mx-auto">
     <div class="pomodoro-container rounded-lg shadow">
-      <div class="flex gap-4">
+      <div class="mode-controls flex gap-4">
         <Button
           class="text-white"
           size="small"
@@ -271,6 +304,18 @@ function resetSelectedTask() {
           @click="setMode(mode.value)"
         >
           {{ mode.name }}
+        </Button>
+      </div>
+      <div class="mode-controls-short flex gap-4">
+        <Button
+          class="text-white"
+          size="small"
+          glass
+          v-for="mode in modes"
+          :key="mode.shortName"
+          @click="setMode(mode.value)"
+        >
+          {{ mode.shortName }}
         </Button>
       </div>
       <PomodoroTimer
@@ -321,16 +366,22 @@ function resetSelectedTask() {
     <div class="tasks-container grid gap-5 p-2 w-full">
       <div class="flex justify-between items-center border-b-2 p-2">
         <span class="text-lg font-bold tasks-label">Tasks</span>
-        <Button
-          type="button"
-          size="small"
-          class="btn-remove-tasks"
-          :disabled="!hasTasks"
-          shape="circle"
-          @click="handleClickDeleteAllTasks"
-        >
-          <span class="bi bi-trash"></span>
-        </Button>
+        <div class="dropdown dropdown-end">
+          <Button size="small" shape="circle" tabindex="0" :disabled="!hasTasks" default>
+            <span class="bi bi-three-dots-vertical"></span>
+          </Button>
+          <ul
+            tabindex="0"
+            class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-60 mt-2"
+          >
+            <li v-for="item in tasksActionsDropdownMenu" :key="item.label">
+              <a @click="item.action">
+                <span :class="item.icon"></span>
+                <span>{{ item.label }}</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
       <div class="tasks-container">
         <TaskList

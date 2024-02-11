@@ -28,10 +28,10 @@ onMounted(() => {
 });
 </script>
 <template>
-  <dialog class="modal" ref="dialog" v-if="visible">
+  <dialog class="modal" ref="dialog" v-if="visible" :aria-labelledby="props.header">
     <div class="modal-box max-w-md">
       <div class="modal-header flex justify-between items-center mb-5">
-        <h3 class="font-bold text-lg">{{ props.header }}</h3>
+        <h3 class="font-bold text-lg" :id="props.header">{{ props.header }}</h3>
         <form method="dialog">
           <Button size="small" shape="circle">
             <span class="bi bi-x-lg"></span>
