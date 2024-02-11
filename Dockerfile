@@ -65,6 +65,8 @@ COPY --from=build /usr/src/app/dist ./dist
 
 COPY server.ts .
 COPY nodemon.json .
+COPY .env .
+
 # Expose the port that the application listens on.
 EXPOSE 3000
 
