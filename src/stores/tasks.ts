@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, readonly, ref, type DeepReadonly, type Ref } from 'vue';
 import { Task, type TaskData } from '@/models/task';
+import { v4 as uuidv4 } from 'uuid';
 
 export type TaskAdd = Pick<TaskData, 'title' | 'estimatedPomodoros'>;
 export type TaskUpdate = Pick<TaskData, 'id'> & Partial<Omit<TaskData, 'id'>>;
@@ -21,7 +22,7 @@ export const useTasksStore = defineStore('tasks', () => {
 
     const newTask = new Task({
       ...task,
-      id: Date.now().toString(),
+      id: uuidv4(),
       completedPomodoros: 0,
       done: false
     });
