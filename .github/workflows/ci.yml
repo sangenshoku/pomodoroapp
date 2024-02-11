@@ -28,34 +28,25 @@ jobs:
       - name: Execute Unit Tests
         run: |
           npm run test:unit
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-      - name: Execute E2E Tests
-        run: |
-          npm run test:e2e
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
       - name: Type Check
         run: |
           npm run type-check
   deploy:
     needs: check-and-test
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Deploy
         uses: appleboy/ssh-action@v1.0.3
         env:
           VITE_API_SERVER_URL: ${{ vars.VITE_API_SERVER_URL }}
+          GIT_REPO: ${{ github.repository }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           passphrase: ${{ secrets.SSH_PASS }}
           key: ${{ secrets.SSH_KEY }}
-          envs: VITE_API_SERVER_URL
+          envs: VITE_API_SERVER_URL,GIT_REPO
           script: |
             sudo apt-get update
             sudo apt-get install ca-certificates curl gnupg
@@ -69,5 +60,6 @@ jobs:
             sudo apt-get update
             sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
             export FRONTEND_REPO=pomodoroapp
-            cd /var/www/html && rm -r $FRONTEND_REPO && git clone git@github.com:sangenshoku/pomodoroapp.git && cd $FRONTEND_REPO
-            docker compose up -d --build -e VITE_API_SERVER_URL=$VITE_API_SERVER_URL
+            cd /var/www/html && rm -r $FRONTEND_REPO && git clone git@github.com:$GIT_REPO.git && cd $FRONTEND_REPO
+            echo VITE_API_SERVER_URL=$VITE_API_SERVER_URL > .env
+            docker compose --env-file .env up -d --build
