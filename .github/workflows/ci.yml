@@ -28,9 +28,22 @@ jobs:
       - name: Execute Unit Tests
         run: |
           npm run test:unit
-      - name: Type Check
+      - name: Build
         run: |
-          npm run type-check
+          npm run build
+      - name: Install Playwright Browsers
+        run: |
+          npx playwright install --with-deps
+      - name: Execute E2E Tests
+        run: |
+          npm run test:e2e
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
   deploy:
     needs: check-and-test
     runs-on: ubuntu-latest
