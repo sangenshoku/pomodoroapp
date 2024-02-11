@@ -1,33 +1,66 @@
-# pomodoroapp
+# Pomodoro - (Single Page Application)
 
-This template should help get you started developing with Vue 3 in Vite.
+![Vue](https://img.shields.io/badge/Vue-%234FC08D.svg?style=for-the-badge&logo=vue.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-%233178C6.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-%23007ACC.svg?style=for-the-badge&logo=vite&logoColor=white)
 
-## Recommended IDE Setup
+A customizable time management app that helps you focus on any task you're working on.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+Check out the live demo [here](https://pomodoro.rjon.tech).
 
-## Type Support for `.vue` Imports in TS
+See [Pomodoro - Backend](https://github.com/sangenshoku/pomodoroapi).
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+## About Pomodoro Technique
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+> Pomodoro Technique is a time management method developed by Francesco Cirillo in the late 1980s. The technique uses a timer to break down work into intervals, traditionally 25 minutes in length, separated by short breaks.
 
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+## Features
 
-## Customize configuration
+- [x] Timer for Pomodoro Session (25 minutes).
+- [x] Break timer (5 minutes and 15 minutes).
+- [x] Customizable session and break durations.
+- [x] Pause, resume, and stop functionality.
+- [x] Add tasks to the session.
+- [x] Mark tasks as completed.
+- [x] Login and register.
+- [ ] Sound notification when the session ends.
+- [ ] Customizable Theme.
+- [ ] Graphs and statistics.
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+## How to Use
+
+- Click the `Start` button to start the session.
+- Work during the Pomodoro session.
+- Take a short break when the session ends.
+- After four sessions, take a longer break.
+- Repeat the process as needed.
+- Optionally, you can add tasks to the session.
+- Mark the tasks as completed when done.
+
+## Technologies Used
+
+- [Vue 3](https://v3.vuejs.org/)
+- [Vite](https://vitejs.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [DaisyUI](https://daisyui.com/)
+- [Playwright](https://playwright.dev/)
+- [Vitest](https://vitest.dev/)
+- [Pinia](https://pinia.vuejs.org/)
+- [Axios](https://axios-http.com/)
+- [TanStack Query](https://tanstack.com/query/latest)
+- [Docker](https://www.docker.com/)
 
 ## Project Setup
+
+### Install Dependencies
 
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### Run in development mode
 
 ```sh
 npm run dev
@@ -39,13 +72,13 @@ npm run dev
 npm run build
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+### Run Unit Tests
 
 ```sh
 npm run test:unit
 ```
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
+### Run End-to-End Tests
 
 ```sh
 # Install browsers for the first run
@@ -64,8 +97,42 @@ npm run test:e2e -- tests/example.spec.ts
 npm run test:e2e -- --debug
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### Lint
 
 ```sh
 npm run lint
 ```
+
+## Docker Setup
+
+### Build the Docker Image
+
+Configure the `compose.yaml` and locate the `expose` property.
+
+```yaml
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - 5173:3000 # Change the port if needed
+```
+
+Then, run the following command to build the Docker image and start the container.
+
+```sh
+docker compose up -d
+```
+
+### Access the Application
+
+Open your browser and navigate to `http://localhost:5173`.
+
+## Credits
+
+This project is inspired by [Pomofocus.io](https://pomofocus.io/).
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
