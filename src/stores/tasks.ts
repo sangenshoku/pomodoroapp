@@ -10,43 +10,43 @@ export type TaskOrReadonlyTaskList = Task[] | DeepReadonly<Task[]>;
 
 export const useTasksStore = defineStore('tasks', () => {
   // explicitly define using Ref type because it's being inferred as ordinary object of array
-  const _tasks: Ref<Task[]> = ref([]);
+  const _tasks: Ref<Map<string, Task>> = ref(new Map());
 
-  const tasks = readonly(_tasks);
-  const hasTasks = computed(() => _tasks.value.length > 0);
+  const tasks = computed(() => readonly([..._tasks.value.values()]));
+  const hasTasks = computed(() => _tasks.value.size > 0);
+  const hasFinishedTasks = computed(() => tasks.value.some((task) => task.done));
 
   const addTask = (task: TaskAdd) => {
-    task = { ...task };
-
     if (!isValid(task)) return;
 
+    const id = uuidv4();
     const newTask = new Task({
       ...task,
-      id: uuidv4(),
+      id,
       completedPomodoros: 0,
       done: false
     });
 
-    _tasks.value.push(newTask);
+    _tasks.value.set(id, newTask);
   };
 
   const updateTask = (task: TaskUpdate) => {
-    const foundTask = _tasks.value.find((t) => t.id === task.id);
+    const foundTask = _tasks.value.get(task.id);
     if (!foundTask) return;
 
     foundTask.updateFrom(task);
   };
 
   const deleteTask = (id: string) => {
-    _tasks.value = _tasks.value.filter((task) => task.id !== id);
+    _tasks.value.delete(id);
   };
 
   const deleteAllTasks = () => {
-    _tasks.value.length = 0;
+    _tasks.value.clear();
   };
 
   const deleteFinishedTasks = () => {
-    _tasks.value = _tasks.value.filter((task) => !task.done);
+    tasks.value.filter(({ done }) => done).forEach(({ id }) => _tasks.value.delete(id));
   };
 
   const isValid = (task: TaskAdd | TaskUpdate) => {
@@ -63,6 +63,7 @@ export const useTasksStore = defineStore('tasks', () => {
     updateTask,
     deleteAllTasks,
     hasTasks,
+    hasFinishedTasks,
     deleteFinishedTasks
   };
 });

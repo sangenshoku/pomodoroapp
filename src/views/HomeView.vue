@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { reactive, ref, toValue, watch, type DeepReadonly, computed } from 'vue';
-import { usePomodoroTimerSettingStore, type PomodoroModeValue } from '@/stores/timer-setting';
+import {
+  usePomodoroTimerSettingStore,
+  type PomodoroModeValue
+} from '@/stores/settings/timer-setting';
 import { setHTMLTitle } from '@/utils';
 import { type TaskData, Task } from '@/models/task';
 import { useTasksStore, type TaskOrReadonlyTask } from '@/stores/tasks';
@@ -9,6 +12,7 @@ import { setDataMode } from '@/utils';
 import Button from '@/components/Button.vue';
 import { TaskService } from '@/services/task-service';
 import { useAuthStore } from '@/stores/auth';
+import { usePomodoroAudioSettingStore } from '@/stores/settings/audio-setting';
 
 interface PomodoroMode {
   name: string;
@@ -30,11 +34,10 @@ const DEFAULT_UPDATE_TASK = Object.freeze({
   done: false
 });
 
-const LONG_BREAK_INTERVAL = 4;
-
 const pomodoroTimeSetting = usePomodoroTimerSettingStore();
 const tasksStore = useTasksStore();
 const authStore = useAuthStore();
+const pomodoroAudioSetting = usePomodoroAudioSettingStore();
 
 const taskService = new TaskService();
 
@@ -88,7 +91,8 @@ const tasksActionsDropdownMenu = [
     icon: 'bi bi-trash',
     action: () => {
       handleClickDeleteFinishedTasks();
-    }
+    },
+    isDisabled: () => !tasksStore.hasFinishedTasks
   },
   {
     label: 'Remove All Tasks',
@@ -126,7 +130,7 @@ const handleTimerEvent = (minuteStr: string) => {
 const handleFinishedPomodoro = () => {
   switch (pomodoroTimeSetting.currentMode) {
     case 'pomodoro': {
-      if (toValue(currentPomodoroCount) % LONG_BREAK_INTERVAL === 0) {
+      if (toValue(currentPomodoroCount) % pomodoroTimeSetting.timeSetting.longBreakInterval === 0) {
         setMode('longBreak');
       } else {
         setMode('shortBreak');
@@ -242,7 +246,8 @@ const handleClickDeleteAllTasks = async () => {
 };
 
 const handleClickDeleteFinishedTasks = async () => {
-  if (!confirm('Are you sure you want to delete finished tasks?')) return;
+  if (!confirm('Are you sure you want to delete finished tasks?') || !tasksStore.hasFinishedTasks)
+    return;
 
   if (authStore.isAuthenticated) {
     await taskService.deleteFinishedTasks();
@@ -321,6 +326,8 @@ function resetSelectedTask() {
       <PomodoroTimer
         :minutes="pomodoroTimeSetting.getTimeSetting('pomodoro')"
         :mode="pomodoroTimeSetting.currentMode"
+        :clock-tick-audio="pomodoroAudioSetting.currentClockTickAudio"
+        :alarm-audio="pomodoroAudioSetting.currentAlarmAudio"
         @init="handleInitPomodoro"
         @running="handleTimerEvent"
         @paused="handleTimerEvent"
@@ -331,6 +338,8 @@ function resetSelectedTask() {
       <PomodoroTimer
         :minutes="pomodoroTimeSetting.getTimeSetting('shortBreak')"
         :mode="pomodoroTimeSetting.currentMode"
+        :clock-tick-audio="pomodoroAudioSetting.currentClockTickAudio"
+        :alarm-audio="pomodoroAudioSetting.currentAlarmAudio"
         @init="handleInitPomodoro"
         @running="handleTimerEvent"
         @paused="handleTimerEvent"
@@ -341,6 +350,8 @@ function resetSelectedTask() {
       <PomodoroTimer
         :minutes="pomodoroTimeSetting.getTimeSetting('longBreak')"
         :mode="pomodoroTimeSetting.currentMode"
+        :clock-tick-audio="pomodoroAudioSetting.currentClockTickAudio"
+        :alarm-audio="pomodoroAudioSetting.currentAlarmAudio"
         @init="handleInitPomodoro"
         @running="handleTimerEvent"
         @paused="handleTimerEvent"
@@ -375,7 +386,7 @@ function resetSelectedTask() {
             class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-60 mt-2"
           >
             <li v-for="item in tasksActionsDropdownMenu" :key="item.label">
-              <a @click="item.action">
+              <a :class="{ disabled: item.isDisabled?.() }" @click="item.action">
                 <span :class="item.icon"></span>
                 <span>{{ item.label }}</span>
               </a>
@@ -479,3 +490,4 @@ function resetSelectedTask() {
   }
 }
 </style>
+@/stores/settings/timer-setting

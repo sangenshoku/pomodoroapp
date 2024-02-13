@@ -4,12 +4,16 @@ import Button from './Button.vue';
 
 const visible = defineModel('visible', { default: false, required: true, type: Boolean });
 const props = defineProps<{ header?: string }>();
+const emits = defineEmits<{
+  close: [];
+}>();
 
 const dialog = ref<HTMLDialogElement | null>(null);
 
 const handleInitDialog = () => {
   dialog.value?.addEventListener('close', () => {
     visible.value = false;
+    emits('close');
   });
 
   if (toValue(visible)) {

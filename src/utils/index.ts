@@ -1,4 +1,4 @@
-import type { PomodoroModeValue } from '@/stores/timer-setting';
+import type { PomodoroModeValue } from '@/stores/settings/timer-setting';
 
 export const getFromLocalStorage = <T>(key: string) => {
   const item = localStorage.getItem(key);

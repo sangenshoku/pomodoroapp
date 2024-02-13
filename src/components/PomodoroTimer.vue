@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useTimer, TimerStatusEnum } from '@/composables/timer';
-import type { PomodoroModeValue } from '@/stores/timer-setting';
-import { onMounted, toRef, watch } from 'vue';
+import type { PomodoroModeValue } from '@/stores/settings/timer-setting';
+import { onMounted, onUnmounted, toRef, watch } from 'vue';
 import Button from '@/components/Button.vue';
+import { AlarmAudioService, ClockTickAudioService } from '@/services/audio-service';
 
 // Error: [@vue/compiler-sfc] Failed to resolve index type into finite keys
 // see: https://github.com/vuejs/core/issues/8286
@@ -13,6 +14,8 @@ import Button from '@/components/Button.vue';
 interface PomodoroTimerProps {
   minutes: number;
   mode?: PomodoroModeValue;
+  clockTickAudio?: ClockTickAudioService | null;
+  alarmAudio?: AlarmAudioService | null;
 }
 
 const props = withDefaults(defineProps<PomodoroTimerProps>(), {
@@ -54,6 +57,7 @@ watch(
       emits('paused', newTime);
     } else if (newStatus === TimerStatusEnum.FINISHED) {
       emits('finished', newTime);
+      props.alarmAudio?.play();
     }
   },
   { deep: true }
@@ -66,18 +70,30 @@ watch(
   }
 );
 
-const toggleTimer = () => {
+const toggleTimer = async () => {
   if (isStopped() || isFinished()) {
     startTimer(props.minutes);
+    props.clockTickAudio?.play();
   } else if (isPaused()) {
-    resumeTimer();
+    await resumeTimer();
+    props.clockTickAudio?.play();
   } else if (isRunning()) {
-    pauseTimer();
+    await pauseTimer();
+    props.clockTickAudio?.pause();
   }
+};
+
+const handleStopTimer = async () => {
+  await stopTimer();
+  props.clockTickAudio?.stop();
 };
 
 onMounted(() => {
   emits('init', timeFormatted.value);
+});
+
+onUnmounted(() => {
+  props.clockTickAudio?.stop();
 });
 </script>
 <template>
@@ -94,7 +110,7 @@ onMounted(() => {
         size="large"
         shape="circle"
         glass
-        @click="stopTimer"
+        @click="handleStopTimer"
         v-if="isRunning()"
       >
         <span class="bi bi-stop-fill text-3xl text-white"></span>
@@ -145,3 +161,4 @@ onMounted(() => {
   }
 }
 </style>
+@/services/audio-service @/stores/settings/timer-setting

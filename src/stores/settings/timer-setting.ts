@@ -6,37 +6,42 @@ export interface PomodoroTimeSetting {
   pomodoro: number;
   shortBreak: number;
   longBreak: number;
+  longBreakInterval: number;
 }
 
-export type PomodoroModeValue = keyof PomodoroTimeSetting;
+export type PomodoroModeValue = keyof Omit<PomodoroTimeSetting, 'longBreakInterval'>;
 
-export const LOCAL_STORAGE_KEY = 'pomodoroTimerSetting';
+export const POMODORO_TIMER_LOCAL_STORAGE_KEY = 'pomodoroTimerSetting';
 
 export const DEFAULT_TIME_SETTING: PomodoroTimeSetting = Object.freeze({
   pomodoro: 25,
   shortBreak: 5,
-  longBreak: 15
+  longBreak: 15,
+  longBreakInterval: 4
 });
 
 export const usePomodoroTimerSettingStore = defineStore('pomodoro-timer-setting', () => {
   const _timeSetting = shallowReactive<PomodoroTimeSetting>(
-    getFromLocalStorage<PomodoroTimeSetting>(LOCAL_STORAGE_KEY) ?? { ...DEFAULT_TIME_SETTING }
+    getFromLocalStorage<PomodoroTimeSetting>(POMODORO_TIMER_LOCAL_STORAGE_KEY) ?? {
+      ...DEFAULT_TIME_SETTING
+    }
   );
-
   const _currentMode = shallowRef<PomodoroModeValue>('pomodoro');
 
   const currentMode = shallowReadonly(_currentMode);
   const timeSetting = shallowReadonly(_timeSetting);
 
   watch(_timeSetting, (newTimeSetting) => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newTimeSetting));
+    localStorage.setItem(POMODORO_TIMER_LOCAL_STORAGE_KEY, JSON.stringify(newTimeSetting));
   });
 
   const setTimeSetting = (settings: Partial<PomodoroTimeSetting>) => {
     for (const [key, value] of Object.entries(settings)) {
       if (!(key in _timeSetting)) continue;
       if (typeof value !== 'number') continue;
-      if (value < 0) {
+      if (key === 'longBreakInterval' && value < 1) {
+        settings[key] = 1;
+      } else if (value < 0) {
         settings[key as PomodoroModeValue] = 0;
       } else if (value > 60) {
         settings[key as PomodoroModeValue] = 60;

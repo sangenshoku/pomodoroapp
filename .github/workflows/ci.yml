@@ -73,6 +73,9 @@ jobs:
             sudo apt-get update
             sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
             export FRONTEND_REPO=pomodoroapp
-            cd /var/www/html && rm -r $FRONTEND_REPO && git clone git@github.com:$GIT_REPO.git && cd $FRONTEND_REPO
+            cd /var/www/html && \ 
+              if [ -d $FRONTEND_REPO ]; then rm -r $FRONTEND_REPO; fi && \
+              git clone git@github.com:$GIT_REPO.git && \
+              cd $FRONTEND_REPO
             echo VITE_API_SERVER_URL=$VITE_API_SERVER_URL > .env
             docker compose --env-file .env up -d --build
