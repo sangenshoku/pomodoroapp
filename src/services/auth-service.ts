@@ -7,30 +7,35 @@ interface CurrentAuthUser {
 
 const AUTH_ENDPOINT = '/auth';
 
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export interface AuthService {
-  login(email: string, password: string): Promise<AxiosResponse<CurrentAuthUser>>;
+  login(request: LoginRequest): Promise<AxiosResponse<CurrentAuthUser>>;
   logout(): Promise<AxiosResponse>;
-  register(email: string, password: string): Promise<AxiosResponse>;
+  register(request: RegisterRequest): Promise<AxiosResponse>;
   currentUser(): Promise<AxiosResponse<CurrentAuthUser>>;
 }
 
 export default class CookieAuthService implements AuthService {
-  async login(email: string, password: string) {
-    return await axios.post<CurrentAuthUser>(`${AUTH_ENDPOINT}/login`, {
-      email,
-      password
-    });
+  async login(request: LoginRequest) {
+    return await axios.post<CurrentAuthUser>(`${AUTH_ENDPOINT}/login`, { ...request });
   }
 
   async logout() {
     return await axios.post(`${AUTH_ENDPOINT}/logout`);
   }
 
-  async register(email: string, password: string) {
-    return await axios.post(`${AUTH_ENDPOINT}/register`, {
-      email,
-      password
-    });
+  async register(request: RegisterRequest) {
+    return await axios.post(`${AUTH_ENDPOINT}/register`, { ...request });
   }
 
   async currentUser() {

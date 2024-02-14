@@ -1,16 +1,15 @@
 import { defineStore } from 'pinia';
 import { ref, computed, toValue, shallowReactive } from 'vue';
-import CookieAuthService, { type AuthService } from '@/services/auth-service';
+import CookieAuthService, {
+  type AuthService,
+  type LoginRequest,
+  type RegisterRequest
+} from '@/services/auth-service';
 import { getFromLocalStorage, saveToLocalStorage } from '@/utils';
 
 export interface User {
   username: string;
 }
-
-type Credentials = {
-  email: string;
-  password: string;
-};
 
 interface AuthLoading {
   login: boolean;
@@ -31,19 +30,17 @@ const authStoreSetup = (authService: AuthService) => {
   const user = computed(() => _user.value);
   const isAuthenticated = computed(() => !!_user.value);
 
-  const login = async (credentials: Credentials) => {
+  const login = async (request: LoginRequest) => {
     setLoading('login', true);
     return authService
-      .login(credentials.email, credentials.password)
+      .login(request)
       .then((response) => setAuthUser(response.data))
       .finally(() => setLoading('login', false));
   };
 
-  const register = async (credentials: Credentials) => {
+  const register = async (request: RegisterRequest) => {
     setLoading('register', true);
-    return authService
-      .register(credentials.email, credentials.password)
-      .finally(() => setLoading('register', false));
+    return authService.register(request).finally(() => setLoading('register', false));
   };
 
   const logout = async () => {

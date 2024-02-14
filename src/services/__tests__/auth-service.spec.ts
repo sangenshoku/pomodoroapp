@@ -4,6 +4,16 @@ import CookieAuthService from '../auth-service';
 
 vi.mock('@/http');
 
+const TEST_LOGIN_REQUEST = {
+  email: 'test@test.com',
+  password: 'password'
+};
+
+const TEST_REGISTER_REQUEST = {
+  ...TEST_LOGIN_REQUEST,
+  confirmPassword: 'password'
+};
+
 describe('AuthService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -13,9 +23,11 @@ describe('AuthService', () => {
     const authService = new CookieAuthService();
 
     vi.mocked(axios, true).post.mockResolvedValue({ data: { username: 'test@test.com' } });
+    vi.spyOn(authService, 'login');
 
-    const response = await authService.login('test@test.com', 'password');
+    const response = await authService.login(TEST_LOGIN_REQUEST);
 
+    expect(authService.login).toHaveBeenCalledWith(TEST_LOGIN_REQUEST);
     expect(response.data).toMatchObject({ username: 'test@test.com' });
   });
 
@@ -33,9 +45,11 @@ describe('AuthService', () => {
     const authService = new CookieAuthService();
 
     vi.mocked(axios, true).post.mockResolvedValue({});
+    vi.spyOn(authService, 'register');
 
-    const response = await authService.register('test@test.com', 'password');
+    const response = await authService.register(TEST_REGISTER_REQUEST);
 
+    expect(authService.register).toHaveBeenCalledWith(TEST_REGISTER_REQUEST);
     expect(response).toMatchObject({});
   });
 

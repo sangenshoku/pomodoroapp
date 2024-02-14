@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 import { axiosErrorHandler } from '@/http';
 import { useToastNotificationStore } from '@/stores/toast-notification';
+import type { RegisterRequest } from '@/services/auth-service';
 
 export interface RegisterResponseError {
   description: string;
@@ -19,9 +20,10 @@ const authStore = useAuthStore();
 const router = useRouter();
 const notificationStore = useToastNotificationStore();
 
-const formRegister = shallowReactive({
+const formRegister = shallowReactive<RegisterRequest>({
   email: '',
-  password: ''
+  password: '',
+  confirmPassword: ''
 });
 
 const error = shallowRef<RegisterResponseError | undefined>();
@@ -56,7 +58,7 @@ const resetError = () => {
 };
 </script>
 <template>
-  <div class="card grid gap-5 bg-white p-10 main-wrapper m-auto">
+  <div class="card grid gap-5 bg-white p-7 sm:p-10 main-wrapper m-auto">
     <div class="register-contaie">
       <h3 class="text-lg font-bold text-center">Register</h3>
       <form class="grid gap-5 mb-5" id="form-register" @submit.enter="handleSubmit">
@@ -79,6 +81,16 @@ const resetError = () => {
             :color="firstError ? 'error' : undefined"
             required
             v-model="formRegister.password"
+          />
+        </div>
+        <div class="form-control">
+          <label for="confirm-password" class="label"> Confirm Password </label>
+          <TextInput
+            id="confirm-password"
+            type="password"
+            :color="firstError ? 'error' : undefined"
+            required
+            v-model="formRegister.confirmPassword"
           />
         </div>
         <div role="alert" class="alert alert-error" v-if="firstError">

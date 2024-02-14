@@ -6,9 +6,14 @@ import { flushPromises } from '@vue/test-utils';
 
 vi.mock('@/http');
 
-const TEST_CREDENTIALS = {
+const TEST_LOGIN_REQUEST = {
   email: 'test@test.com',
   password: 'password'
+};
+
+const TEST_REGISTER_REQUEST = {
+  ...TEST_LOGIN_REQUEST,
+  confirmPassword: 'password'
 };
 
 describe('AuthStore', () => {
@@ -25,9 +30,9 @@ describe('AuthStore', () => {
 
     vi.spyOn(authStore, 'register');
 
-    await authStore.register(TEST_CREDENTIALS);
+    await authStore.register(TEST_REGISTER_REQUEST);
 
-    expect(authStore.register).toHaveBeenCalledWith(TEST_CREDENTIALS);
+    expect(authStore.register).toHaveBeenCalledWith(TEST_REGISTER_REQUEST);
   });
 
   it('should be able to login', async () => {
@@ -37,9 +42,9 @@ describe('AuthStore', () => {
 
     vi.spyOn(authStore, 'login');
 
-    await authStore.login(TEST_CREDENTIALS);
+    await authStore.login(TEST_LOGIN_REQUEST);
 
-    expect(authStore.login).toHaveBeenCalledWith(TEST_CREDENTIALS);
+    expect(authStore.login).toHaveBeenCalledWith(TEST_LOGIN_REQUEST);
     expect(authStore.user).toMatchObject({ username: 'test@test.com' });
     expect(authStore.isAuthenticated).toBe(true);
   });
@@ -73,13 +78,13 @@ describe('AuthStore', () => {
       vi.mocked(axios, true).post.mockResolvedValueOnce({}).mockRejectedValue('');
 
       try {
-        authStore.register(TEST_CREDENTIALS);
+        authStore.register(TEST_REGISTER_REQUEST);
 
         expect(authStore.isLoading('register')).toBe(true);
 
         await flushPromises();
 
-        await authStore.register(TEST_CREDENTIALS);
+        await authStore.register(TEST_REGISTER_REQUEST);
       } catch (e) {
         // empty
       } finally {
@@ -93,13 +98,13 @@ describe('AuthStore', () => {
       vi.mocked(axios, true).post.mockResolvedValueOnce({}).mockRejectedValue('');
 
       try {
-        authStore.login(TEST_CREDENTIALS);
+        authStore.login(TEST_LOGIN_REQUEST);
 
         expect(authStore.isLoading('login')).toBe(true);
 
         await flushPromises();
 
-        await authStore.login(TEST_CREDENTIALS);
+        await authStore.login(TEST_LOGIN_REQUEST);
       } catch (e) {
         // empty
       } finally {

@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 import { axiosErrorHandler } from '@/http';
 import { useToastNotificationStore } from '@/stores/toast-notification';
+import { type LoginRequest } from '@/services/auth-service';
 
 interface LoginResponseError {
   code: string;
@@ -16,7 +17,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 const notificationStore = useToastNotificationStore();
 
-const formLogin = shallowReactive({
+const formLogin = shallowReactive<LoginRequest>({
   email: '',
   password: ''
 });
@@ -53,7 +54,7 @@ const resetError = () => {
 };
 </script>
 <template>
-  <div class="card grid gap-5 bg-white p-10 main-wrapper m-auto">
+  <div class="card grid gap-5 bg-white p-7 sm:p-10 main-wrapper m-auto">
     <div class="login-container">
       <h3 class="text-lg font-bold text-center">Login</h3>
       <form class="grid gap-5 mb-5" id="form-login" @submit.enter="handleSubmit">
