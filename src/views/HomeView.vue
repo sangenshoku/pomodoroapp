@@ -10,7 +10,7 @@ import { useTasksStore, type TaskOrReadonlyTask } from '@/stores/tasks';
 import { Modal, TaskList, TextInput, PomodoroTimer } from '@/components';
 import { setDataMode } from '@/utils';
 import Button from '@/components/Button.vue';
-import { TaskService } from '@/services/task-service';
+import { useTaskService } from '@/services/task-service';
 import { useAuthStore } from '@/stores/auth';
 import { usePomodoroAudioSettingStore } from '@/stores/settings/audio-setting';
 
@@ -39,7 +39,7 @@ const tasksStore = useTasksStore();
 const authStore = useAuthStore();
 const pomodoroAudioSetting = usePomodoroAudioSettingStore();
 
-const taskService = new TaskService();
+const taskService = useTaskService();
 
 const currentPomodoroCount = ref(1);
 const addTaskModalVisible = ref(false);
@@ -92,7 +92,8 @@ const tasksActionsDropdownMenu = [
     action: () => {
       handleClickDeleteFinishedTasks();
     },
-    isDisabled: () => !tasksStore.hasFinishedTasks
+    isDisabled: () =>
+      authStore.isAuthenticated ? !taskService.hasFinishedTasks() : !tasksStore.hasFinishedTasks
   },
   {
     label: 'Remove All Tasks',
