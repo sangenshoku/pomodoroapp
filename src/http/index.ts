@@ -1,4 +1,4 @@
-import _axios, { AxiosError, isAxiosError } from 'axios';
+import _axios, { AxiosError, isAxiosError, HttpStatusCode } from 'axios';
 
 interface HttpErrorBase<T> {
   error: Error | AxiosError<T>;
@@ -13,15 +13,6 @@ interface HttpAxiosError<T> extends HttpErrorBase<T> {
 interface HttpError<T> extends HttpErrorBase<T> {
   type: 'error';
   error: Error;
-}
-
-export enum HttpStatus {
-  OK = 200,
-  CREATED = 201,
-  BAD_REQUEST = 400,
-  UNAUTHORIZED = 401,
-  NOT_FOUND = 404,
-  INTERNAL_SERVER_ERROR = 500
 }
 
 const BASE_URL =
@@ -49,7 +40,7 @@ export const authInterceptor = axios.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (isAxiosError(error) && error.response?.status === HttpStatus.UNAUTHORIZED) {
+    if (isAxiosError(error) && error.response?.status === HttpStatusCode.Unauthorized) {
       localStorage.removeItem('user');
     }
 
